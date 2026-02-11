@@ -28,6 +28,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn-primary{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;box-shadow:0 4px 14px rgba(102,126,234,.4)}
 .btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(102,126,234,.5)}
+.btn-new-vacancy{background:linear-gradient(135deg,#10b981 0%,#ffffff 100%);color:#065f46;box-shadow:0 4px 14px rgba(16,185,129,.4);font-weight:700;padding:10px 20px;border-radius:12px;white-space:nowrap}
+.btn-new-vacancy:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(16,185,129,.5)}
+@media (max-width:640px){.btn-new-vacancy{padding:8px 16px;font-size:12px}}
 .btn-cancel{background:linear-gradient(135deg,#dc3545 0%,#c82333 100%);color:white;box-shadow:0 4px 14px rgba(220,53,69,.3);font-weight:700}
 .btn-cancel:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(220,53,69,.4)}
 .btn-outline{background:linear-gradient(135deg,white 0%,#f8f9fa 100%);border:2px solid #667eea;color:#667eea}
@@ -136,7 +139,7 @@ let state = {
     contact_email: '',
     schedule: '',
     work_days: '',
-    imageUrl: ''
+    imageBase64: ''
   },
   aiChatOpen: false,
   aiMessages: [],
@@ -171,7 +174,6 @@ const hideLoading = () => {
 };
 
 const showModal = (type, title, message) => {
-  // Limpiar modales previos
   const existingModals = document.querySelectorAll('#modal-root .modal-overlay');
   existingModals.forEach(m => m.remove());
   
@@ -203,7 +205,6 @@ const showModal = (type, title, message) => {
   const modalRoot = document.getElementById('modal-root');
   modalRoot.appendChild(modal);
   
-  // Event listeners
   const closeBtn = modal.querySelector('[data-close-modal]');
   const closeModal = () => modal.remove();
   
@@ -212,7 +213,6 @@ const showModal = (type, title, message) => {
     if (e.target === modal) closeModal();
   });
   
-  // Auto-cerrar después de 8 segundos
   setTimeout(closeModal, 8000);
 };
 
@@ -220,6 +220,16 @@ const escapeHtml = (text) => {
   if (typeof text !== 'string') return '';
   const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
   return text.replace(/[&<>"']/g, m => map[m]);
+};
+
+// ✅ Función para convertir imagen a base64
+const convertImageToBase64 = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => resolve(e.target.result);
+    reader.onerror = () => reject(new Error('Error al leer la imagen'));
+    reader.readAsDataURL(file);
+  });
 };
 
 // ==================== FUNCIONES DE AUTENTICACIÓN ====================
@@ -336,20 +346,11 @@ async function handleDeleteAccount() {
   try {
     const { data: userVacancies } = await supabaseClient
       .from('vacancies')
-      .select('id,image_url')
+      .select('id')
       .eq('user_id', state.user.id);
     
     if (userVacancies && userVacancies.length > 0) {
       for (const v of userVacancies) {
-        if (v.image_url) {
-          const path = v.image_url.split('/vacancy-images/')[1];
-          if (path) {
-            await supabaseClient.storage
-              .from('vacancy-images')
-              .remove([path])
-              .catch(err => console.warn('No se pudo eliminar imagen:', err));
-          }
-        }
         await supabaseClient.from('vacancies').delete().eq('id', v.id);
       }
     }
@@ -391,12 +392,7 @@ function togglePassword(field) {
   } else {
     state.showConfirmPassword = !state.showConfirmPassword;
   }
-  
-  // Re-render solo los inputs de contraseña
-  const passwordInput = document.querySelector('input[type="password"], input[type="text"]');
-  if (passwordInput) {
-    render();
-  }
+  render();
 }
 
 // ==================== FUNCIONES DE VACANTES ====================
@@ -417,6 +413,7 @@ async function loadVacancies() {
   }
 }
 
+// ✅ Nueva función para manejar subida de imagen (ahora en base64)
 async function handleImageUpload(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -436,39 +433,11 @@ async function handleImageUpload(e) {
   
   showLoading();
   try {
-    // Eliminar imagen anterior si existe Y no es la imagen del post que estamos editando
-    if (state.formData.imageUrl) {
-      const shouldDelete = !state.editingVacancy || 
-        (state.editingVacancy && state.formData.imageUrl !== state.editingVacancy.image_url);
-      
-      if (shouldDelete) {
-        const oldPath = state.formData.imageUrl.split('/vacancy-images/')[1];
-        if (oldPath) {
-          await supabaseClient.storage
-            .from('vacancy-images')
-            .remove([oldPath])
-            .catch(err => console.warn('No se pudo eliminar imagen anterior:', err));
-        }
-      }
-    }
+    // ✅ Convertir a base64
+    const base64Image = await convertImageToBase64(file);
+    state.formData.imageBase64 = base64Image;
+    console.log('✅ [UPLOAD] Imagen convertida a base64');
     
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${state.user.id}/${Date.now()}.${fileExt}`;
-    
-    const { error: uploadError } = await supabaseClient.storage
-      .from('vacancy-images')
-      .upload(fileName, file);
-    
-    if (uploadError) throw uploadError;
-    
-    const { data: urlData } = supabaseClient.storage
-      .from('vacancy-images')
-      .getPublicUrl(fileName);
-    
-    state.formData.imageUrl = urlData.publicUrl;
-    console.log('✅ [UPLOAD] Imagen subida:', state.formData.imageUrl);
-    
-    // Re-render para mostrar la imagen
     render();
   } catch (error) {
     console.error('❌ [UPLOAD] Error:', error);
@@ -479,10 +448,11 @@ async function handleImageUpload(e) {
   }
 }
 
+// ✅ Función de guardado optimizada para base64
 async function handleSaveVacancy(e) {
   e.preventDefault();
   
-  // Validaciones estrictas
+  // Validaciones
   if (!state.user || !state.user.id) {
     return showModal('error', 'Sesión requerida', 'Inicia sesión para publicar una vacante.');
   }
@@ -499,11 +469,11 @@ async function handleSaveVacancy(e) {
     return showModal('error', 'Descripción requerida', 'El campo "Descripción" es obligatorio.');
   }
   
-  if (!state.formData.imageUrl) {
+  if (!state.formData.imageBase64) {
     return showModal('error', 'Imagen requerida', 'Debes subir una imagen antes de guardar.');
   }
   
-  // Validación de teléfono: exactamente 10 dígitos
+  // Validación de teléfono
   if (state.formData.contact_phone) {
     const phoneDigits = state.formData.contact_phone.replace(/\D/g, '');
     if (phoneDigits.length !== 10) {
@@ -526,12 +496,11 @@ async function handleSaveVacancy(e) {
       contact_email: state.formData.contact_email.trim() || null,
       schedule: state.formData.schedule.trim() || null,
       work_days: state.formData.work_days.trim() || null,
-      image_url: state.formData.imageUrl
+      image_base64: state.formData.imageBase64
     };
     
     let result;
     if (state.editingVacancy) {
-      // Actualizar vacante existente
       result = await supabaseClient
         .from('vacancies')
         .update(vacancyData)
@@ -539,7 +508,6 @@ async function handleSaveVacancy(e) {
       
       console.log('✅ [UPDATE] Vacante actualizada');
     } else {
-      // Crear nueva vacante
       result = await supabaseClient
         .from('vacancies')
         .insert([vacancyData]);
@@ -549,7 +517,6 @@ async function handleSaveVacancy(e) {
     
     if (result.error) throw result.error;
     
-    // Limpieza completa post-guardado
     const wasEditing = !!state.editingVacancy;
     state.editingVacancy = null;
     resetJobForm();
@@ -577,18 +544,6 @@ async function handleDeleteVacancy(vacancyId) {
   
   showLoading();
   try {
-    // Eliminar imagen si existe
-    if (vacancy.image_url) {
-      const path = vacancy.image_url.split('/vacancy-images/')[1];
-      if (path) {
-        await supabaseClient.storage
-          .from('vacancy-images')
-          .remove([path])
-          .catch(err => console.warn('No se pudo eliminar imagen:', err));
-      }
-    }
-    
-    // Eliminar vacante
     const { error } = await supabaseClient
       .from('vacancies')
       .delete()
@@ -622,7 +577,7 @@ function handleEditVacancy(vacancyId) {
     contact_email: vacancy.contact_email || '',
     schedule: vacancy.schedule || '',
     work_days: vacancy.work_days || '',
-    imageUrl: vacancy.image_url || '',
+    imageBase64: vacancy.image_base64 || '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -646,7 +601,6 @@ function toggleAIChat() {
   
   render();
   
-  // Auto-scroll al final del chat
   if (state.aiChatOpen) {
     setTimeout(() => {
       const messagesContainer = document.querySelector('.ai-chat-messages');
@@ -666,7 +620,6 @@ async function sendAIMessage() {
     return;
   }
   
-  // Agregar mensaje del usuario
   if (message) {
     state.aiMessages.push({ role: 'user', content: message });
   }
@@ -677,7 +630,6 @@ async function sendAIMessage() {
   try {
     const requestData = { text: message || '' };
     
-    // Convertir imagen a base64 si existe
     if (state.aiImage) {
       const reader = new FileReader();
       const base64 = await new Promise((resolve, reject) => {
@@ -690,7 +642,6 @@ async function sendAIMessage() {
     
     console.log('📤 [IA] Enviando request...');
     
-    // Llamada a Edge Function
     const response = await fetch(`${SUPABASE_URL}/functions/v1/autofill-ia`, {
       method: 'POST',
       headers: {
@@ -727,20 +678,16 @@ async function sendAIMessage() {
   } finally {
     state.aiLoading = false;
     
-    // Limpiar input
     if (input) input.value = '';
     
-    // Limpieza de imagen tras envío
     state.aiImage = null;
     state.aiImagePreview = null;
     
-    // Limpiar file input
     const fileInput = document.querySelector('#ai-image-upload');
     if (fileInput) fileInput.value = '';
     
     render();
     
-    // Auto-scroll al final
     setTimeout(() => {
       const messagesContainer = document.querySelector('.ai-chat-messages');
       if (messagesContainer) {
@@ -758,7 +705,6 @@ function startAutofill() {
   
   const data = state.aiExtractedData;
   
-  // Sobrescribir datos del formulario con los extraídos por IA
   if (data.company) state.formData.company = data.company;
   if (data.job_title) state.formData.job_title = data.job_title;
   if (data.description) state.formData.description = data.description;
@@ -768,7 +714,6 @@ function startAutofill() {
   if (data.schedule) state.formData.schedule = data.schedule;
   if (data.work_days) state.formData.work_days = data.work_days;
   
-  // Cerrar chat IA y limpiar
   state.aiChatOpen = false;
   state.aiMessages = [];
   state.aiExtractedData = null;
@@ -864,7 +809,6 @@ function stopDrag() {
   }
 }
 
-// Event listeners globales para drag
 document.addEventListener('mousemove', drag);
 document.addEventListener('mouseup', stopDrag);
 
@@ -892,17 +836,6 @@ function cleanForm() {
 function cancelForm() {
   if (!confirm('¿Cancelar y volver al dashboard? Los cambios no guardados se perderán.')) return;
   
-  // Eliminar imagen temporal si existe y no es de una vacante editada
-  if (state.formData.imageUrl && (!state.editingVacancy || state.formData.imageUrl !== state.editingVacancy.image_url)) {
-    const path = state.formData.imageUrl.split('/vacancy-images/')[1];
-    if (path) {
-      supabaseClient.storage
-        .from('vacancy-images')
-        .remove([path])
-        .catch(err => console.warn('No se pudo eliminar imagen temporal:', err));
-    }
-  }
-  
   state.editingVacancy = null;
   state.view = 'dashboard';
   resetJobForm();
@@ -925,7 +858,7 @@ function resetJobForm() {
   state.formData.contact_email = '';
   state.formData.schedule = '';
   state.formData.work_days = '';
-  state.formData.imageUrl = '';
+  state.formData.imageBase64 = '';
 }
 
 // ==================== FUNCIONES DE RENDER ====================
@@ -1113,7 +1046,7 @@ function renderDashboard() {
             </div>
             <div class="flex items-center gap-4">
               ${state.user && !state.isGuest ? `
-                <button id="new-vacancy-btn" class="btn btn-primary">
+                <button id="new-vacancy-btn" class="btn btn-new-vacancy">
                   <i class="fas fa-plus"></i> Nueva Vacante
                 </button>
                 <div class="relative">
@@ -1183,8 +1116,8 @@ function renderVacancyCard(vacancy, isOwner) {
   return `
     <div class="vacancy-card">
       <div class="h-48 bg-gray-200 overflow-hidden">
-        ${vacancy.image_url ? `
-          <img src="${escapeHtml(vacancy.image_url)}" alt="${escapeHtml(vacancy.company)}" class="w-full h-full object-cover">
+        ${vacancy.image_base64 ? `
+          <img src="${escapeHtml(vacancy.image_base64)}" alt="${escapeHtml(vacancy.company)}" class="w-full h-full object-cover">
         ` : `
           <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-purple-600">
             <i class="fas fa-image text-white text-6xl opacity-50"></i>
@@ -1257,12 +1190,12 @@ function renderForm() {
           <form id="vacancy-form" class="p-8 space-y-6">
             <div class="input-group">
               <label>Imagen de la Vacante *</label>
-              <div class="image-upload-area ${state.formData.imageUrl ? 'has-image' : ''}">
+              <div class="image-upload-area ${state.formData.imageBase64 ? 'has-image' : ''}">
                 <input type="file" accept="image/*" id="image-upload" class="hidden">
                 <label for="image-upload" class="cursor-pointer block">
-                  ${state.formData.imageUrl ? `
+                  ${state.formData.imageBase64 ? `
                     <div class="image-preview-container">
-                      <img src="${escapeHtml(state.formData.imageUrl)}" alt="Vista previa">
+                      <img src="${escapeHtml(state.formData.imageBase64)}" alt="Vista previa">
                     </div>
                   ` : `
                     <div class="py-6">
@@ -1449,7 +1382,6 @@ function render() {
   const app = document.getElementById('app');
   if (!app) return;
   
-  // Cerrar menú si cambiamos de vista
   if (state.menuOpen && state.view !== 'dashboard') {
     state.menuOpen = false;
   }
@@ -1633,12 +1565,12 @@ function attachEventListeners() {
     });
   }
   
-  // Vacancy cards - Edit/Delete buttons
+  // Vacancy cards
   const editButtons = document.querySelectorAll('[data-edit-vacancy]');
   editButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const vacancyId = btn.getAttribute('data-edit-vacancy');
-      handleEditVacancy(parseInt(vacancyId));
+      handleEditVacancy(vacancyId);
     });
   });
   
@@ -1646,7 +1578,7 @@ function attachEventListeners() {
   deleteButtons.forEach(btn => {
     btn.addEventListener('click', () => {
       const vacancyId = btn.getAttribute('data-delete-vacancy');
-      handleDeleteVacancy(parseInt(vacancyId));
+      handleDeleteVacancy(vacancyId);
     });
   });
   
@@ -1655,13 +1587,11 @@ function attachEventListeners() {
   if (vacancyForm) {
     vacancyForm.addEventListener('submit', handleSaveVacancy);
     
-    // Image upload
     const imageUpload = document.getElementById('image-upload');
     if (imageUpload) {
       imageUpload.addEventListener('change', handleImageUpload);
     }
     
-    // Form inputs
     const inputCompany = document.getElementById('input-company');
     if (inputCompany) {
       inputCompany.addEventListener('input', (e) => {
@@ -1693,7 +1623,6 @@ function attachEventListeners() {
     const inputPhone = document.getElementById('input-phone');
     if (inputPhone) {
       inputPhone.addEventListener('input', (e) => {
-        // Solo permitir números
         e.target.value = e.target.value.replace(/\D/g, '');
         state.formData.contact_phone = e.target.value;
       });
@@ -1720,7 +1649,6 @@ function attachEventListeners() {
       });
     }
     
-    // Form buttons
     const cancelFormBtn = document.getElementById('cancel-form-btn');
     if (cancelFormBtn) {
       cancelFormBtn.addEventListener('click', cancelForm);
@@ -1791,7 +1719,6 @@ function attachEventListeners() {
     removeAiImageBtn.addEventListener('click', removeAIImage);
   }
   
-  // AI Chat drag
   const aiChatHeader = document.getElementById('ai-chat-header');
   if (aiChatHeader) {
     aiChatHeader.addEventListener('mousedown', startDrag);
@@ -1803,7 +1730,6 @@ async function init() {
   console.log('🚀 [INIT] Inicializando aplicación...');
   
   try {
-    // Verificar sesión existente
     const { data, error } = await supabaseClient.auth.getSession();
     if (error) throw error;
     
@@ -1815,7 +1741,6 @@ async function init() {
       await loadVacancies();
     }
     
-    // Listener de cambios de autenticación
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
       console.log('🔐 [AUTH] Evento:', event);
       
@@ -1835,7 +1760,6 @@ async function init() {
       }
     });
     
-    // Suscripción a cambios en tiempo real
     supabaseClient
       .channel('vacancies-changes')
       .on('postgres_changes', {
@@ -1859,7 +1783,6 @@ async function init() {
   }
 }
 
-// Iniciar aplicación cuando el DOM esté listo
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
