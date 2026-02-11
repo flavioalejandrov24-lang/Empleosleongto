@@ -11,11 +11,12 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💼</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;overflow-x:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;overflow-x:hidden;color:#1a1a1a}
 @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
 @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 @keyframes modalFadeIn{from{opacity:0;transform:translate(-50%,-40%)}to{opacity:1;transform:translate(-50%,-50%)}}
+@keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(50px) scale(0.9)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
 .fade-in{animation:fadeIn .5s ease-out forwards}
 .slide-in{animation:slideIn .3s ease-out forwards}
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -23,16 +24,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .modal-header{background:linear-gradient(135deg,#000 0%,#333 100%);color:white;padding:24px;display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px}
 .modal-body{padding:28px;line-height:1.6;color:#495057}
 .modal-footer{padding:20px 28px;background:#f8f9fa;display:flex;gap:12px;justify-content:flex-end;border-top:1px solid #e9ecef}
-.btn{padding:12px 28px;border-radius:10px;font-weight:600;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);border:none;font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+.btn{padding:12px 28px;border-radius:10px;font-weight:600;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);border:none;font-size:14px;text-transform:uppercase;letter-spacing:.5px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .btn-primary{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;box-shadow:0 4px 14px rgba(102,126,234,.4)}
 .btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(102,126,234,.5)}
-.btn-cancel{background:linear-gradient(135deg,#dc3545 0%,#f8f9fa 100%);color:#721c24;box-shadow:0 4px 14px rgba(220,53,69,.3);font-weight:700}
-.btn-cancel:hover:not(:disabled){background:linear-gradient(135deg,#c82333 0%,#e9ecef 100%);transform:translateY(-2px)}
+.btn-cancel{background:linear-gradient(135deg,#dc3545 0%,#c82333 100%);color:white;box-shadow:0 4px 14px rgba(220,53,69,.3);font-weight:700}
+.btn-cancel:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(220,53,69,.4)}
 .btn-outline{background:linear-gradient(135deg,white 0%,#f8f9fa 100%);border:2px solid #667eea;color:#667eea}
 .btn-outline:hover:not(:disabled){background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white}
-.btn-autofill{background:linear-gradient(135deg,#000 0%,#333 100%);color:white;box-shadow:0 4px 14px rgba(0,0,0,.4)}
-.btn-autofill:hover:not(:disabled){background:linear-gradient(135deg,#1a1a1a 0%,#444 100%);transform:translateY(-2px)}
+.btn-autofill{background:linear-gradient(135deg,#000 0%,#333 100%);color:#FFD700;box-shadow:0 4px 14px rgba(0,0,0,.4);border:2px solid rgba(255,215,0,.3)}
+.btn-autofill:hover:not(:disabled){background:linear-gradient(135deg,#1a1a1a 0%,#444 100%);transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.5)}
+.btn-clean{background:linear-gradient(135deg,#f8f9fa 0%,#e9ecef 100%);color:#667eea;border:2px solid #667eea}
+.btn-clean:hover:not(:disabled){background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;transform:translateY(-2px)}
+.btn-save{background:linear-gradient(135deg,#28a745 0%,#20c997 100%);color:white;box-shadow:0 4px 14px rgba(40,167,69,.3)}
+.btn-save:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 20px rgba(40,167,69,.4)}
 .input-group{position:relative;margin-bottom:20px}
 .input-group input,.input-group textarea,.input-group select{width:100%;padding:14px 16px;border:2px solid #e9ecef;border-radius:10px;font-size:14px;transition:all .2s;font-family:inherit}
 .input-group input:focus,.input-group textarea:focus,.input-group select:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 4px rgba(102,126,234,.1)}
@@ -49,109 +54,1224 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .loader{border:4px solid #f3f4f6;border-top:4px solid #667eea;border-radius:50%;width:50px;height:50px;animation:spin .8s linear infinite;margin:20px auto}
 .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#ai-chat-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:500px;background:white;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.4);z-index:9999;display:none;animation:modalFadeIn .3s ease-out}
-#ai-chat-header{background:linear-gradient(135deg,#000 0%,#333 100%);color:white;padding:20px;display:flex;justify-content:space-between;align-items:center;border-radius:16px 16px 0 0}
-#ai-chat-messages{height:300px;overflow-y:auto;padding:20px;background:#1a1a1a;color:white}
-.ai-message{margin-bottom:16px;padding:12px 16px;border-radius:10px;max-width:90%;word-wrap:break-word}
+.ai-chat-modal{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);width:400px;max-height:600px;z-index:9999;animation:slideUp .4s ease-out;background:white;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.4);border:2px solid rgba(0,0,0,.2)}
+.ai-chat-header{background:linear-gradient(135deg,#000 0%,#333 100%);color:#FFD700;padding:16px 20px;border-radius:16px 16px 0 0;display:flex;justify-content:space-between;align-items:center;cursor:move;font-weight:700;font-size:18px;text-shadow:0 0 10px rgba(255,215,0,.7)}
+.ai-chat-header h3{margin:0;color:#FFD700}
+.ai-chat-header .close-btn{background:rgba(255,255,255,.1);border:none;color:#FFD700;width:32px;height:32px;border-radius:50%;cursor:pointer;transition:all .3s ease;margin-left:12px}
+.ai-chat-header .close-btn:hover{background:rgba(255,215,0,.2);transform:rotate(90deg)}
+.ai-chat-messages{background:rgba(0,0,0,.95);padding:20px;max-height:300px;overflow-y:auto;border-left:2px solid #FFD700;border-right:2px solid #FFD700}
+.ai-message{margin-bottom:16px;padding:12px 16px;border-radius:12px;max-width:90%;word-wrap:break-word;font-size:14px;line-height:1.5}
 .ai-message.user{background:linear-gradient(135deg,#2563eb 0%,#3b82f6 100%);color:white;margin-left:auto;border-top-right-radius:4px}
-.ai-message.bot{background:linear-gradient(135deg,#1a1a1a 0%,#333 100%);color:#FFD700;border-top-left-radius:4px;border-left:4px solid #FFD700}
-.ai-loading{display:inline-block;width:24px;height:24px;border:4px solid rgba(255,215,0,.3);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite}
-.ai-image-preview{max-height:150px;margin-bottom:12px;border-radius:10px;width:100%;object-fit:cover}
-#ai-chat-input-container{padding:20px;background:linear-gradient(135deg,#000 0%,#333 100%);border-radius:0 0 16px 16px}
-#ai-chat-buttons{display:flex;gap:12px;margin-top:16px}
-#ai-chat-buttons button{flex:1;padding:12px;border-radius:8px;font-weight:600;cursor:pointer;transition:all .2s}
-#ai-chat-buttons .btn-send{background:linear-gradient(135deg,#2563eb 0%,#3b82f6 100%);color:white}
-#ai-chat-buttons .btn-start{background:linear-gradient(135deg,#10b981 0%,#34d399 100%);color:white}
-#ai-chat-buttons .btn-close{background:linear-gradient(135deg,#dc3545 0%,#e83e8c 100%);color:white}
-#ai-chat-buttons button:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.ai-message.bot{background:linear-gradient(135deg,#1a1a1a 0%,#333 100%);color:#FFD700;border-top-left-radius:4px;border-left:3px solid #FFD700}
+.ai-loading{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,215,0,.3);border-top-color:#FFD700;border-radius:50%;animation:spin 1s linear infinite}
+.ai-chat-input{background:linear-gradient(135deg,#000 0%,#333 100%);padding:16px;border-radius:0 0 16px 16px}
+.ai-chat-input textarea{width:100%;padding:12px 16px;border:2px solid #FFD700;border-radius:12px;background:rgba(255,255,255,.1);color:white;resize:none;font-family:inherit;font-size:14px;transition:all .3s ease}
+.ai-chat-input textarea:focus{outline:none;border-color:#FFD700;box-shadow:0 0 15px rgba(255,215,0,.5)}
+.ai-chat-input textarea::placeholder{color:rgba(255,255,255,.5)}
+.ai-chat-actions{display:flex;gap:12px;margin-top:12px}
+.ai-chat-actions button{flex:1;padding:12px 16px;border:none;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;transition:all .3s ease;display:flex;align-items:center;justify-content:center;gap:8px}
+.ai-chat-actions .btn-send{background:linear-gradient(135deg,#1e3a8a 0%,#3b82f6 100%);color:white}
+.ai-chat-actions .btn-send:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(59,130,246,.4)}
+.ai-chat-actions .btn-start{background:linear-gradient(135deg,#16a34a 0%,#22c55e 100%);color:white;animation:pulse-gold 2s infinite}
+@keyframes pulse-gold{0%,100%{opacity:1}50%{opacity:.5;transform:scale(1.1)}}
+.ai-chat-actions .btn-start:hover{transform:translateY(-2px) scale(1.05);box-shadow:0 8px 20px rgba(34,197,94,.4)}
+.ai-chat-actions .btn-close-chat{background:linear-gradient(135deg,#dc3545 0%,#e83e8c 100%);color:white}
+.ai-chat-actions .btn-close-chat:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(220,53,69,.4)}
+.ai-chat-input .file-upload{display:flex;align-items:center;gap:12px;margin-top:12px}
+.ai-chat-input .file-upload label{background:rgba(255,215,0,.2);color:#FFD700;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:12px;transition:all .3s ease;border:1px solid rgba(255,215,0,.3)}
+.ai-chat-input .file-upload label:hover{background:rgba(255,215,0,.3);transform:translateY(-1px)}
+.ai-chat-input .file-upload input{display:none}
+.ai-chat-input .file-preview{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);padding:8px 12px;border-radius:8px;margin-top:8px;border:1px solid rgba(255,215,0,.2)}
+.ai-chat-input .file-preview img{width:40px;height:40px;object-fit:cover;border-radius:6px}
+.ai-chat-input .file-preview .remove-file{background:rgba(255,0,0,.3);color:white;border:none;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px}
+.ai-chat-modal.minimized{width:280px;height:60px;max-height:60px}
+.ai-chat-modal.minimized .ai-chat-messages,.ai-chat-modal.minimized .ai-chat-input{display:none}
+.ai-chat-modal.minimized .ai-chat-header{border-radius:16px}
+.ai-chat-modal.minimized .ai-chat-header h3{font-size:14px}
 ::-webkit-scrollbar{width:12px}
 ::-webkit-scrollbar-track{background:#f1f1f1}
 ::-webkit-scrollbar-thumb{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:6px}
-@media(max-width:768px){#ai-chat-modal{width:95%}.modal-window{margin:20px}}
+@media(max-width:768px){.ai-chat-modal{width:95%;max-width:95%}.modal-window{margin:20px}}
 </style>
 </head>
 <body>
 <div id="app"></div>
+<div id="modal-root"></div>
 <script>
+console.log('🚀 [INICIO] Cargando aplicación Empleos León GTO...');
+
+// Configuración de Supabase
 const SUPABASE_URL='https://mecrloufrzbfcihioeve.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1lY3Jsb3VmcnpiZmNpaGlvZXZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3NTM2OTgsImV4cCI6MjA4NjMyOTY5OH0.Gs36EkNHv5vG2CPdrK7XtCnWvX5NYkyPY9moTdezbVA';
-const SUPABASE_REDIRECT_URL='https://flavioalejandrov24-lang.github.io/empleosleongto/';
+const SUPABASE_REDIRECT_URL='https://flavioalejandrov24-lang.github.io/Empleosleongtoaxel/';
 const{createClient}=supabase;
 const supabaseClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-let state={view:'login',user:null,isGuest:false,vacancies:[],editingVacancy:null,showPassword:false,showConfirmPassword:false,menuOpen:false,acceptedTerms:false,loading:false,aiChatOpen:false};
-let formData={email:'',password:'',confirmPassword:'',company:'',job_title:'',description:'',location:'',contact_phone:'',contact_email:'',schedule:'',work_days:'',imageUrl:''};
-let aiMessages=[],aiImage=null,aiImagePreview=null,aiExtractedData=null;
+console.log('✅ [SUPABASE] Cliente inicializado');
 
-const showLoading=()=>{state.loading=true;const l=document.createElement('div');l.id='loader-overlay';l.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';l.innerHTML='<div class="loader"></div>';document.body.appendChild(l)};
-const hideLoading=()=>{state.loading=false;const l=document.getElementById('loader-overlay');if(l)l.remove()};
-const showModal=(type,title,message)=>{const icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'},colors={success:'linear-gradient(135deg,#28a745 0%,#20c997 100%)',error:'linear-gradient(135deg,#dc3545 0%,#e83e8c 100%)',warning:'linear-gradient(135deg,#ffc107 0%,#fd7e14 100%)',info:'linear-gradient(135deg,#17a2b8 0%,#20c997 100%)'};const m=document.createElement('div');m.className='modal-overlay';m.innerHTML=`<div class="modal-window"><div class="modal-header" style="background:${colors[type]}"><span style="font-size:28px">${icons[type]}</span><span>${title}</span></div><div class="modal-body"><p>${message}</p></div><div class="modal-footer"><button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove()">Aceptar</button></div></div>`;document.body.appendChild(m);m.addEventListener('click',e=>{if(e.target===m)m.remove()});setTimeout(()=>{if(m.parentNode)m.remove()},8000)};
+// Estado centralizado - TODO dentro de state
+let state={
+view:'login',
+user:null,
+isGuest:false,
+vacancies:[],
+editingVacancy:null,
+showPassword:false,
+showConfirmPassword:false,
+menuOpen:false,
+acceptedTerms:false,
+loading:false,
+// Formulario
+formData:{
+email:'',
+password:'',
+confirmPassword:'',
+company:'',
+job_title:'',
+description:'',
+location:'',
+contact_phone:'',
+contact_email:'',
+schedule:'',
+work_days:'',
+imageUrl:''
+},
+// Chat IA - Centralizado aquí (CORREGIDO)
+aiChatOpen:false,
+aiMessages:[],
+aiLoading:false,
+aiImage:null,
+aiImagePreview:null,
+aiExtractedData:null
+};
 
-async function handleLogin(e){e.preventDefault();showLoading();try{const{data,error}=await supabaseClient.auth.signInWithPassword({email:formData.email,password:formData.password});if(error)throw error;state.user=data.user;const accepted=localStorage.getItem('terms_accepted_'+data.user.id);state.acceptedTerms=!!accepted;state.view=accepted?'dashboard':'terms';await loadVacancies();render();showModal('success','Bienvenido','Has iniciado sesión correctamente')}catch(error){console.error('Error login:',error);showModal('error','Error de inicio de sesión',error.message||'Correo o contraseña incorrectos')}finally{hideLoading()}}
+console.log('✅ [ESTADO] Estado inicializado');
 
-async function handleSignup(e){e.preventDefault();if(formData.password!==formData.confirmPassword)return showModal('error','Error','Las contraseñas no coinciden');if(formData.password.length<6)return showModal('error','Error','La contraseña debe tener al menos 6 caracteres');showLoading();try{const{data,error}=await supabaseClient.auth.signUp({email:formData.email,password:formData.password,options:{emailRedirectTo:SUPABASE_REDIRECT_URL}});if(error)throw error;showModal('success','Registro exitoso','Revisa tu correo para confirmar tu cuenta. Luego podrás iniciar sesión.');state.view='login';resetAuthForm();render()}catch(error){console.error('Error signup:',error);showModal('error','Error',error.message.includes('already registered')?'Este correo ya está registrado':error.message)}finally{hideLoading()}}
+// Variables para drag del chat
+let isDragging=false;
+let offsetX=0,offsetY=0;
 
-async function handleResetPassword(){const email=prompt('Ingresa tu correo electrónico:');if(!email)return;showLoading();try{const{error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:SUPABASE_REDIRECT_URL});if(error)throw error;showModal('success','Correo enviado','Revisa tu bandeja de entrada para restablecer tu contraseña')}catch(error){console.error('Error reset:',error);showModal('error','Error','No se pudo enviar el correo')}finally{hideLoading()}}
+// Funciones de utilidad
+const showLoading=()=>{
+console.log('⏳ [LOADING] Mostrando loader');
+state.loading=true;
+const loader=document.createElement('div');
+loader.id='loader-overlay';
+loader.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)';
+loader.innerHTML='<div class="loader"></div>';
+document.body.appendChild(loader);
+};
 
-async function handleLogout(){if(!confirm('¿Cerrar sesión?'))return;await supabaseClient.auth.signOut();state.user=null;state.isGuest=false;state.view='login';state.acceptedTerms=false;resetAuthForm();resetJobForm();render()}
+const hideLoading=()=>{
+console.log('✅ [LOADING] Ocultando loader');
+state.loading=false;
+const loader=document.getElementById('loader-overlay');
+if(loader)loader.remove();
+};
 
-async function handleDeleteAccount(){if(!confirm('⚠️ ¿ELIMINAR tu cuenta y TODAS tus vacantes?\nEsta acción NO se puede deshacer.'))return;const conf=prompt('Escribe "ELIMINAR" para confirmar:');if(conf!=='ELIMINAR')return;showLoading();try{const{data:userVacancies}=await supabaseClient.from('vacancies').select('id,image_url').eq('user_id',state.user.id);if(userVacancies&&userVacancies.length>0){for(const v of userVacancies){if(v.image_url){const path=v.image_url.split('/vacancy-images/')[1];if(path)await supabaseClient.storage.from('vacancy-images').remove([path])}await supabaseClient.from('vacancies').delete().eq('id',v.id)}}localStorage.removeItem('terms_accepted_'+state.user.id);showModal('success','Eliminado','Tus vacantes han sido eliminadas.');setTimeout(()=>handleLogout(),2000)}catch(error){console.error('Error delete:',error);showModal('error','Error','No se pudo eliminar')}finally{hideLoading()}}
+const showModal=(type,title,message)=>{
+console.log(`📢 [MODAL] ${type.toUpperCase()}: ${title} - ${message}`);
+const icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};
+const colors={
+success:'linear-gradient(135deg,#28a745 0%,#20c997 100%)',
+error:'linear-gradient(135deg,#dc3545 0%,#e83e8c 100%)',
+warning:'linear-gradient(135deg,#ffc107 0%,#fd7e14 100%)',
+info:'linear-gradient(135deg,#17a2b8 0%,#20c997 100%)'
+};
+const modal=document.createElement('div');
+modal.className='modal-overlay';
+modal.innerHTML=`
+<div class="modal-window">
+<div class="modal-header" style="background:${colors[type]}">
+<span style="font-size:28px">${icons[type]}</span>
+<span>${title}</span>
+</div>
+<div class="modal-body">
+<p>${message}</p>
+</div>
+<div class="modal-footer">
+<button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove()">
+<i class="fas fa-check"></i> Aceptar
+</button>
+</div>
+</div>
+`;
+document.getElementById('modal-root').appendChild(modal);
+modal.addEventListener('click',e=>{
+if(e.target===modal)modal.remove();
+});
+setTimeout(()=>{if(modal.parentNode)modal.remove();},8000);
+};
 
-function handleGuestAccess(){state.isGuest=true;state.view='dashboard';loadVacancies();render()}
+// Funciones de autenticación
+async function handleLogin(e){
+e.preventDefault();
+console.log('🔐 [LOGIN] Intentando iniciar sesión');
+showLoading();
+try{
+const email=state.formData.email.trim();
+const password=state.formData.password;
+if(!email||!password){
+throw new Error('Correo y contraseña son requeridos');
+}
+const{data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+if(error)throw error;
+console.log('✅ [LOGIN] Sesión iniciada exitosamente');
+state.user=data.user;
+const accepted=localStorage.getItem('terms_accepted_'+data.user.id);
+state.acceptedTerms=!!accepted;
+state.view=accepted?'dashboard':'terms';
+await loadVacancies();
+render();
+showModal('success','Bienvenido','Has iniciado sesión correctamente');
+}catch(error){
+console.error('❌ [LOGIN] Error:',error);
+showModal('error','Error de inicio de sesión',error.message||'Correo o contraseña incorrectos');
+}finally{
+hideLoading();
+}
+}
 
-function handleAcceptTerms(){if(!state.acceptedTerms)return showModal('warning','Términos requeridos','Debes aceptar los términos');if(state.user)localStorage.setItem('terms_accepted_'+state.user.id,'true');state.view='dashboard';render()}
+async function handleSignup(e){
+e.preventDefault();
+console.log('📝 [SIGNUP] Intentando registrar usuario');
+if(state.formData.password!==state.formData.confirmPassword){
+console.log('❌ [SIGNUP] Contraseñas no coinciden');
+return showModal('error','Error','Las contraseñas no coinciden');
+}
+if(state.formData.password.length<6){
+console.log('❌ [SIGNUP] Contraseña muy corta');
+return showModal('error','Error','La contraseña debe tener al menos 6 caracteres');
+}
+showLoading();
+try{
+const email=state.formData.email.trim().toLowerCase();
+const{data,error}=await supabaseClient.auth.signUp({
+email,
+password:state.formData.password,
+options:{emailRedirectTo:SUPABASE_REDIRECT_URL}
+});
+if(error)throw error;
+console.log('✅ [SIGNUP] Registro exitoso');
+showModal('success','Registro exitoso','Revisa tu correo para confirmar tu cuenta. Luego podrás iniciar sesión.');
+state.view='login';
+resetAuthForm();
+render();
+}catch(error){
+console.error('❌ [SIGNUP] Error:',error);
+showModal('error','Error',error.message.includes('already registered')?'Este correo ya está registrado':error.message);
+}finally{
+hideLoading();
+}
+}
 
-function togglePassword(field){if(field==='password')state.showPassword=!state.showPassword;else state.showConfirmPassword=!state.showConfirmPassword;const icon=event.target;icon.textContent=(field==='password'?state.showPassword:state.showConfirmPassword)?'👁️':'👁️‍🗨️';const input=icon.previousElementSibling;input.type=(field==='password'?state.showPassword:state.showConfirmPassword)?'text':'password'}
+async function handleResetPassword(){
+const email=prompt('Ingresa tu correo electrónico:');
+if(!email)return;
+console.log('📧 [RESET] Solicitando restablecimiento para:',email);
+showLoading();
+try{
+const{error}=await supabaseClient.auth.resetPasswordForEmail(email.trim(),{redirectTo:SUPABASE_REDIRECT_URL});
+if(error)throw error;
+console.log('✅ [RESET] Correo enviado');
+showModal('success','Correo enviado','Revisa tu bandeja de entrada para restablecer tu contraseña');
+}catch(error){
+console.error('❌ [RESET] Error:',error);
+showModal('error','Error','No se pudo enviar el correo');
+}finally{
+hideLoading();
+}
+}
 
-async function loadVacancies(){try{const{data,error}=await supabaseClient.from('vacancies').select('*').order('created_at',{ascending:false});if(error)throw error;state.vacancies=data||[];render()}catch(error){console.error('Error loading:',error);showModal('error','Error','No se pudieron cargar las vacantes')}}
+async function handleLogout(){
+if(!confirm('¿Cerrar sesión?'))return;
+console.log('🚪 [LOGOUT] Cerrando sesión');
+await supabaseClient.auth.signOut();
+state.user=null;
+state.isGuest=false;
+state.view='login';
+state.acceptedTerms=false;
+resetAuthForm();
+resetJobForm();
+render();
+console.log('✅ [LOGOUT] Sesión cerrada');
+}
 
-async function handleImageUpload(e){const file=e.target.files[0];if(!file)return;if(file.size>2*1024*1024){showModal('error','Archivo muy grande','Máximo 2MB');e.target.value='';return}if(!file.type.startsWith('image/')){showModal('error','Tipo inválido','Solo imágenes');e.target.value='';return}showLoading();try{const fileExt=file.name.split('.').pop();const fileName=`${state.user.id}/${Date.now()}.${fileExt}`;const{error}=await supabaseClient.storage.from('vacancy-images').upload(fileName,file);if(error)throw error;const{data:urlData}=supabaseClient.storage.from('vacancy-images').getPublicUrl(fileName);formData.imageUrl=urlData.publicUrl;render();showModal('success','Imagen cargada','✓')}catch(error){console.error('Error upload:',error);showModal('error','Error al subir',error.message);e.target.value=''}finally{hideLoading()}}
+async function handleDeleteAccount(){
+if(!confirm('⚠️ ¿ELIMINAR tu cuenta y TODAS tus vacantes?\nEsta acción NO se puede deshacer.'))return;
+const conf=prompt('Escribe "ELIMINAR" para confirmar:');
+if(conf!=='ELIMINAR')return;
+console.log('🗑️ [DELETE] Eliminando cuenta del usuario:',state.user?.id);
+showLoading();
+try{
+const{data:userVacancies}=await supabaseClient.from('vacancies').select('id,image_url').eq('user_id',state.user.id);
+if(userVacancies&&userVacancies.length>0){
+console.log(`🗑️ [DELETE] Eliminando ${userVacancies.length} vacantes`);
+for(const v of userVacancies){
+if(v.image_url){
+const path=v.image_url.split('/vacancy-images/')[1];
+if(path){
+console.log('🗑️ [DELETE] Eliminando imagen:',path);
+await supabaseClient.storage.from('vacancy-images').remove([path]);
+}
+}
+console.log('🗑️ [DELETE] Eliminando vacante ID:',v.id);
+await supabaseClient.from('vacancies').delete().eq('id',v.id);
+}
+}
+localStorage.removeItem('terms_accepted_'+state.user.id);
+console.log('✅ [DELETE] Cuenta eliminada');
+showModal('success','Eliminado','Tus vacantes han sido eliminadas.');
+setTimeout(()=>handleLogout(),2000);
+}catch(error){
+console.error('❌ [DELETE] Error:',error);
+showModal('error','Error','No se pudo eliminar');
+}finally{
+hideLoading();
+}
+}
 
-async function handleSaveVacancy(e){e.preventDefault();if(!formData.company||!formData.job_title||!formData.description)return showModal('error','Campos requeridos','Completa empresa, puesto y descripción');if(!formData.imageUrl)return showModal('error','Imagen requerida','Sube una imagen');if(formData.contact_phone&&(formData.contact_phone.length<10||formData.contact_phone.length>16))return showModal('error','Teléfono inválido','10-16 dígitos');showLoading();try{const vacancyData={user_id:state.user.id,company:formData.company,job_title:formData.job_title,description:formData.description,location:formData.location||'León, Guanajuato',contact_phone:formData.contact_phone,contact_email:formData.contact_email,schedule:formData.schedule,work_days:formData.work_days,image_url:formData.imageUrl};if(state.editingVacancy){const{error}=await supabaseClient.from('vacancies').update(vacancyData).eq('id',state.editingVacancy.id);if(error)throw error;showModal('success','Actualizado','✓')}else{const{error}=await supabaseClient.from('vacancies').insert([vacancyData]);if(error)throw error;showModal('success','Publicado','✓')}state.editingVacancy=null;state.view='dashboard';resetJobForm();await loadVacancies()}catch(error){console.error('Error save:',error);showModal('error','Error',error.message)}finally{hideLoading()}}
+function handleGuestAccess(){
+console.log('👥 [GUEST] Acceso como invitado');
+state.isGuest=true;
+state.view='dashboard';
+loadVacancies();
+render();
+}
 
-async function handleDeleteVacancy(vacancy){if(!confirm(`¿Eliminar vacante de ${vacancy.company}?`))return;showLoading();try{if(vacancy.image_url){const path=vacancy.image_url.split('/vacancy-images/')[1];if(path)await supabaseClient.storage.from('vacancy-images').remove([path])}const{error}=await supabaseClient.from('vacancies').delete().eq('id',vacancy.id);if(error)throw error;await loadVacancies();showModal('success','Eliminado','✓')}catch(error){console.error('Error delete:',error);showModal('error','Error','No se pudo eliminar')}finally{hideLoading()}}
+function handleAcceptTerms(){
+if(!state.acceptedTerms){
+console.log('❌ [TERMS] Términos no aceptados');
+return showModal('warning','Términos requeridos','Debes aceptar los términos');
+}
+console.log('✅ [TERMS] Términos aceptados');
+if(state.user)localStorage.setItem('terms_accepted_'+state.user.id,'true');
+state.view='dashboard';
+render();
+}
 
-function handleEditVacancy(vacancy){state.editingVacancy=vacancy;Object.assign(formData,{company:vacancy.company,job_title:vacancy.job_title,description:vacancy.description,location:vacancy.location||'',contact_phone:vacancy.contact_phone||'',contact_email:vacancy.contact_email||'',schedule:vacancy.schedule||'',work_days:vacancy.work_days||'',imageUrl:vacancy.image_url||''});state.view='form';render()}
+function togglePassword(field){
+console.log(`👁️ [PASSWORD] Toggle ${field}`);
+if(field==='password')state.showPassword=!state.showPassword;
+else state.showConfirmPassword=!state.showConfirmPassword;
+const input=document.querySelector(`input[name="${field}"]`);
+if(input)input.type=(field==='password'?state.showPassword:state.showConfirmPassword)?'text':'password';
+}
 
-function openAIChat(){state.aiChatOpen=true;aiMessages=[];aiImage=null;aiImagePreview=null;aiExtractedData=null;aiMessages.push({role:'bot',content:'¡Hola! ¿Tienes alguna información para compartirme para llenar el formulario? Puedes enviarme texto o una imagen con los datos de la vacante.'});render();renderAIMessages()}
+// Funciones de vacantes
+async function loadVacancies(){
+console.log('📥 [VACANCIES] Cargando vacantes...');
+try{
+const{data,error}=await supabaseClient.from('vacancies').select('*').order('created_at',{ascending:false});
+if(error)throw error;
+state.vacancies=data||[];
+console.log(`✅ [VACANCIES] Cargadas ${state.vacancies.length} vacantes`);
+render();
+}catch(error){
+console.error('❌ [VACANCIES] Error:',error);
+showModal('error','Error','No se pudieron cargar las vacantes');
+}
+}
 
-function closeAIChat(){state.aiChatOpen=false;render()}
+async function handleImageUpload(e){
+const file=e.target.files[0];
+if(!file)return;
+console.log('🖼️ [UPLOAD] Archivo seleccionado:',file.name,file.size);
+if(file.size>2*1024*1024){
+console.log('❌ [UPLOAD] Archivo demasiado grande');
+showModal('error','Archivo muy grande','Máximo 2MB');
+e.target.value='';
+return;
+}
+if(!file.type.startsWith('image/')){
+console.log('❌ [UPLOAD] Tipo de archivo inválido');
+showModal('error','Tipo inválido','Solo imágenes');
+e.target.value='';
+return;
+}
+showLoading();
+try{
+const fileExt=file.name.split('.').pop();
+const fileName=`${state.user.id}/${Date.now()}.${fileExt}`;
+console.log('📤 [UPLOAD] Subiendo a Supabase:',fileName);
+const{error}=await supabaseClient.storage.from('vacancy-images').upload(fileName,file);
+if(error)throw error;
+const{data:urlData}=supabaseClient.storage.from('vacancy-images').getPublicUrl(fileName);
+state.formData.imageUrl=urlData.publicUrl;
+console.log('✅ [UPLOAD] Imagen subida:',state.formData.imageUrl);
+render();
+showModal('success','Imagen cargada','✓');
+}catch(error){
+console.error('❌ [UPLOAD] Error:',error);
+showModal('error','Error al subir',error.message);
+e.target.value='';
+}finally{
+hideLoading();
+}
+}
 
-function renderAIMessages(){const container=document.getElementById('ai-chat-messages');if(!container)return;container.innerHTML='';aiMessages.forEach(msg=>{const div=document.createElement('div');div.className=`ai-message ${msg.role}`;div.innerHTML=msg.content;container.appendChild(div)});container.scrollTop=container.scrollHeight}
+async function handleSaveVacancy(e){
+e.preventDefault();
+console.log('💾 [SAVE] Guardando vacante...');
+// Validaciones
+if(!state.formData.company||!state.formData.job_title||!state.formData.description){
+console.log('❌ [SAVE] Campos requeridos incompletos');
+return showModal('error','Campos requeridos','Completa empresa, puesto y descripción');
+}
+if(!state.formData.imageUrl){
+console.log('❌ [SAVE] Imagen no subida');
+return showModal('error','Imagen requerida','Sube una imagen');
+}
+if(state.formData.contact_phone){
+const phoneDigits=state.formData.contact_phone.replace(/\D/g,'');
+if(phoneDigits.length<10||phoneDigits.length>16){
+console.log('❌ [SAVE] Teléfono inválido:',state.formData.contact_phone);
+return showModal('error','Teléfono inválido','10-16 dígitos');
+}
+}
+showLoading();
+try{
+const vacancyData={
+user_id:state.user.id,
+company:state.formData.company.trim(),
+job_title:state.formData.job_title.trim(),
+description:state.formData.description.trim(),
+location:state.formData.location.trim()||'León, Guanajuato',
+contact_phone:state.formData.contact_phone.replace(/\D/g,''),
+contact_email:state.formData.contact_email.trim(),
+schedule:state.formData.schedule.trim(),
+work_days:state.formData.work_days.trim(),
+image_url:state.formData.imageUrl
+};
+console.log('📤 [SAVE] Datos a guardar:',vacancyData);
+if(state.editingVacancy){
+console.log('✏️ [SAVE] Actualizando vacante ID:',state.editingVacancy.id);
+const{error}=await supabaseClient.from('vacancies').update(vacancyData).eq('id',state.editingVacancy.id);
+if(error)throw error;
+showModal('success','Actualizado','Vacante actualizada correctamente');
+}else{
+console.log('➕ [SAVE] Creando nueva vacante');
+const{error}=await supabaseClient.from('vacancies').insert([vacancyData]);
+if(error)throw error;
+showModal('success','Publicado','Vacante publicada correctamente');
+}
+state.editingVacancy=null;
+state.view='dashboard';
+resetJobForm();
+await loadVacancies();
+}catch(error){
+console.error('❌ [SAVE] Error:',error);
+showModal('error','Error',error.message);
+}finally{
+hideLoading();
+}
+}
 
-document.addEventListener('DOMContentLoaded',function(){const fileInput=document.getElementById('ai-image-upload');if(fileInput){fileInput.addEventListener('change',function(e){const file=e.target.files[0];if(!file)return;if(file.size>10*1024*1024){alert('Máximo 10MB');return}aiImage=file;const reader=new FileReader();reader.onload=function(e){aiImagePreview=e.target.result;const previewContainer=document.getElementById('ai-image-preview-container');if(previewContainer)previewContainer.innerHTML=`<img src="${aiImagePreview}" class="ai-image-preview" alt="Vista previa">`};reader.readAsDataURL(file);console.log('Imagen cargada:',file.name)})}});
+async function handleDeleteVacancy(vacancy){
+if(!confirm(`¿Eliminar vacante de ${vacancy.company}?`))return;
+console.log('🗑️ [DELETE] Eliminando vacante ID:',vacancy.id);
+showLoading();
+try{
+if(vacancy.image_url){
+const path=vacancy.image_url.split('/vacancy-images/')[1];
+if(path){
+console.log('🗑️ [DELETE] Eliminando imagen:',path);
+await supabaseClient.storage.from('vacancy-images').remove([path]);
+}
+}
+console.log('🗑️ [DELETE] Eliminando registro de vacante');
+const{error}=await supabaseClient.from('vacancies').delete().eq('id',vacancy.id);
+if(error)throw error;
+await loadVacancies();
+showModal('success','Eliminado','Vacante eliminada correctamente');
+}catch(error){
+console.error('❌ [DELETE] Error:',error);
+showModal('error','Error','No se pudo eliminar');
+}finally{
+hideLoading();
+}
+}
 
-function clearAIImage(){aiImage=null;aiImagePreview=null;const fileInput=document.getElementById('ai-image-upload');if(fileInput)fileInput.value='';const previewContainer=document.getElementById('ai-image-preview-container');if(previewContainer)previewContainer.innerHTML=''}
+function handleEditVacancy(vacancy){
+console.log('✏️ [EDIT] Editando vacante ID:',vacancy.id);
+state.editingVacancy=vacancy;
+state.formData={
+company:vacancy.company||'',
+job_title:vacancy.job_title||'',
+description:vacancy.description||'',
+location:vacancy.location||'',
+contact_phone:vacancy.contact_phone||'',
+contact_email:vacancy.contact_email||'',
+schedule:vacancy.schedule||'',
+work_days:vacancy.work_days||'',
+imageUrl:vacancy.image_url||'',
+email:'',
+password:'',
+confirmPassword:''
+};
+state.view='form';
+render();
+}
 
-async function sendAIMessage(){const input=document.getElementById('ai-chat-input');const message=input.value.trim();if(!message&&!aiImage)return alert('Escribe un mensaje o sube una imagen');if(message)aiMessages.push({role:'user',content:message});renderAIMessages();input.value='';aiMessages.push({role:'bot',content:'<span class="ai-loading"></span> Procesando...'});renderAIMessages();try{const requestData={text:message||''};if(aiImage){const reader=new FileReader();const base64=await new Promise((resolve)=>{reader.onload=(e)=>resolve(e.target.result);reader.readAsDataURL(aiImage)});requestData.image=base64;aiImage=null;aiImagePreview=null;clearAIImage()}const response=await fetch(`${SUPABASE_URL}/functions/v1/extract-vacancy`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON_KEY}`},body:JSON.stringify(requestData)});if(!response.ok)throw new Error(`Error: ${response.status}`);const data=await response.json();aiMessages.pop();aiMessages.push({role:'bot',content:data.message||'He procesado tu información. Presiona "START" para rellenar el formulario.'});if(data.vacancyData){aiExtractedData=data.vacancyData;console.log('Datos de vacante extraídos:',aiExtractedData)}renderAIMessages()}catch(error){console.error('Error:',error);aiMessages.pop();aiMessages.push({role:'bot',content:`Error: ${error.message}. Verifica que la Edge Function esté activa en Supabase.`});renderAIMessages()}}
+// Funciones del Chat IA - CORREGIDAS Y CENTRALIZADAS
+function toggleAIChat(){
+console.log('🤖 [IA] Toggle chat:',!state.aiChatOpen);
+state.aiChatOpen=!state.aiChatOpen;
+if(state.aiChatOpen&&state.aiMessages.length===0){
+state.aiMessages=[{
+role:'bot',
+content:'¡Hola! ¿Tienes alguna información para compartirme para llenar el formulario? Puedes enviarme texto o una imagen con los datos de la vacante.'
+}];
+}
+render();
+}
 
-function startAutofill(){if(!aiExtractedData)return alert('Primero envía la información que deseas procesar.');if(aiExtractedData.company)formData.company=aiExtractedData.company;if(aiExtractedData.job_title)formData.job_title=aiExtractedData.job_title;if(aiExtractedData.description)formData.description=aiExtractedData.description;if(aiExtractedData.location)formData.location=aiExtractedData.location;if(aiExtractedData.contact_phone)formData.contact_phone=aiExtractedData.contact_phone;if(aiExtractedData.contact_email)formData.contact_email=aiExtractedData.contact_email;if(aiExtractedData.schedule)formData.schedule=aiExtractedData.schedule;if(aiExtractedData.work_days)formData.work_days=aiExtractedData.work_days;render();closeAIChat();alert('¡Formulario rellenado automáticamente! Puedes modificar los datos antes de guardar.')}
+async function sendAIMessage(){
+const input=document.getElementById('ai-chat-input');
+const message=input?.value.trim();
+if(!message&&!state.aiImage){
+console.log('📝 [IA] No hay mensaje ni imagen');
+return;
+}
+// Agregar mensaje del usuario
+if(message){
+state.aiMessages.push({role:'user',content:message});
+console.log('📤 [IA] Mensaje del usuario:',message);
+}
+// Mostrar estado de carga
+state.aiLoading=true;
+render();
+try{
+console.log('🚀 [IA] Enviando solicitud a Edge Function...');
+// Preparar datos
+const requestData={text:message||''};
+// Si hay imagen, convertirla a base64
+if(state.aiImage){
+const reader=new FileReader();
+const base64=await new Promise((resolve)=>{
+reader.onload=(e)=>resolve(e.target.result);
+reader.readAsDataURL(state.aiImage);
+});
+requestData.image=base64;
+console.log('🖼️ [IA] Imagen incluida en solicitud');
+}
+// Llamar a la Edge Function
+const response=await fetch(`${SUPABASE_URL}/functions/v1/extract-vacancy`,{
+method:'POST',
+headers:{
+'Content-Type':'application/json',
+'Authorization':`Bearer ${SUPABASE_ANON_KEY}`
+},
+body:JSON.stringify(requestData)
+});
+if(!response.ok){
+throw new Error(`Error HTTP: ${response.status} ${response.statusText}`);
+}
+const data=await response.json();
+console.log('✅ [IA] Respuesta recibida:',data);
+// Agregar respuesta de la IA
+state.aiMessages.push({
+role:'bot',
+content:data.message||'He procesado tu información. Presiona "START" para rellenar el formulario.'
+});
+// Guardar datos extraídos
+if(data.vacancyData){
+state.aiExtractedData=data.vacancyData;
+console.log('💾 [IA] Datos extraídos guardados:',state.aiExtractedData);
+}
+}catch(error){
+console.error('❌ [IA] Error al procesar:',error);
+state.aiMessages.push({
+role:'bot',
+content:`Error: ${error.message}. Verifica que la Edge Function esté activa en Supabase.`
+});
+}finally{
+state.aiLoading=false;
+if(input)input.value='';
+state.aiImage=null;
+state.aiImagePreview=null;
+render();
+}
+}
 
-function cleanForm(){resetJobForm();render();alert('Formulario limpiado')}
+function startAutofill(){
+console.log('🚀 [IA] Iniciando autofill');
+if(!state.aiExtractedData){
+console.log('❌ [IA] No hay datos extraídos');
+showModal('Información','Primero envía la información que deseas procesar.','info');
+return;
+}
+// Mapear datos al formulario
+const data=state.aiExtractedData;
+if(data.company)state.formData.company=data.company;
+if(data.job_title)state.formData.job_title=data.job_title;
+if(data.description)state.formData.description=data.description;
+if(data.location)state.formData.location=data.location;
+if(data.contact_phone)state.formData.contact_phone=data.contact_phone;
+if(data.contact_email)state.formData.contact_email=data.contact_email;
+if(data.schedule)state.formData.schedule=data.schedule;
+if(data.work_days)state.formData.work_days=data.work_days;
+console.log('✅ [IA] Formulario rellenado con:',state.formData);
+// Cerrar chat
+state.aiChatOpen=false;
+state.aiMessages=[];
+state.aiExtractedData=null;
+showModal('¡Éxito!','Formulario rellenado automáticamente.','success');
+render();
+}
 
-function resetAuthForm(){formData.email='';formData.password='';formData.confirmPassword=''}
+function handleAIImageUpload(event){
+const file=event.target.files[0];
+if(!file)return;
+console.log('🖼️ [IA] Imagen seleccionada:',file.name);
+if(file.size>10*1024*1024){
+console.log('❌ [IA] Imagen demasiado grande');
+showModal('Archivo Grande','Máximo 10MB','error');
+return;
+}
+state.aiImage=file;
+const reader=new FileReader();
+reader.onload=(e)=>{
+state.aiImagePreview=e.target.result;
+console.log('✅ [IA] Vista previa generada');
+render();
+};
+reader.readAsDataURL(file);
+}
 
-function resetJobForm(){Object.assign(formData,{company:'',job_title:'',description:'',location:'',contact_phone:'',contact_email:'',schedule:'',work_days:'',imageUrl:''})}
+function removeAIImage(){
+console.log('🗑️ [IA] Eliminando imagen');
+state.aiImage=null;
+state.aiImagePreview=null;
+render();
+}
 
-const svgIcon=`<svg class="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>`;
+function toggleChatMinimize(){
+const chat=document.querySelector('.ai-chat-modal');
+if(chat){
+chat.classList.toggle('minimized');
+console.log('🔽 [IA] Chat minimizado:',chat.classList.contains('minimized'));
+}
+}
 
-function renderLogin(){return`<div class="min-h-screen flex items-center justify-center p-4"><div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden fade-in"><div class="bg-gradient-to-br from-purple-600 to-purple-800 p-8 text-white text-center"><div class="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-xl">${svgIcon}</div><h1 class="text-3xl font-black mb-2">Portal de Empleos</h1><p class="text-purple-200 text-sm font-semibold">León, Guanajuato</p></div><div class="p-8"><form onsubmit="handleLogin(event)"><div class="input-group"><label>Correo Electrónico</label><input type="email" required placeholder="tu@email.com" value="${formData.email}" oninput="formData.email=this.value"></div><div class="input-group"><label>Contraseña</label><input type="password" required placeholder="••••••••" value="${formData.password}" oninput="formData.password=this.value"><span class="input-icon" onclick="togglePassword('password')">👁️‍🗨️</span></div><div class="text-right mb-6"><a href="#" class="text-purple-600 text-sm font-semibold hover:underline" onclick="handleResetPassword();return false">¿Olvidaste tu contraseña?</a></div><button type="submit" class="btn btn-primary w-full mb-3">${state.loading?'Ingresando...':'Ingresar'}</button><button type="button" class="btn btn-outline w-full mb-3" onclick="handleGuestAccess()">Ver Empleos Públicos</button><div class="text-center mt-6"><p class="text-gray-600 text-sm mb-2">¿No tienes cuenta?</p><button type="button" class="text-purple-600 font-semibold hover:underline" onclick="state.view='signup';render()">Crear cuenta nueva</button></div></form></div></div></div>`}
+// Drag para mover el chat
+function startDrag(e){
+isDragging=true;
+const chat=document.querySelector('.ai-chat-modal');
+if(!chat)return;
+const rect=chat.getBoundingClientRect();
+offsetX=e.clientX-rect.left;
+offsetY=e.clientY-rect.top;
+chat.style.transition='none';
+console.log('🖱️ [IA] Iniciando drag');
+}
 
-function renderSignup(){return`<div class="min-h-screen flex items-center justify-center p-4"><div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden fade-in"><div class="bg-gradient-to-br from-purple-600 to-purple-800 p-8 text-white text-center"><h1 class="text-3xl font-black mb-2">Crear Cuenta</h1><p class="text-purple-200 text-sm">Únete a nuestra comunidad</p></div><div class="p-8"><form onsubmit="handleSignup(event)"><div class="input-group"><label>Correo Electrónico</label><input type="email" required placeholder="tu@email.com" value="${formData.email}" oninput="formData.email=this.value"></div><div class="input-group"><label>Contraseña</label><input type="password" required placeholder="Mínimo 6 caracteres" value="${formData.password}" oninput="formData.password=this.value"><span class="input-icon" onclick="togglePassword('password')">👁️‍🗨️</span></div><div class="input-group"><label>Confirmar Contraseña</label><input type="password" required placeholder="Repite tu contraseña" value="${formData.confirmPassword}" oninput="formData.confirmPassword=this.value"><span class="input-icon" onclick="togglePassword('confirm')">👁️‍🗨️</span></div><button type="submit" class="btn btn-primary w-full mb-3">${state.loading?'Creando...':'Crear Cuenta'}</button><button type="button" class="btn btn-cancel w-full" onclick="state.view='login';resetAuthForm();render()">Cancelar</button><div class="text-center mt-6"><p class="text-gray-600 text-sm">¿Ya tienes cuenta? <a href="#" class="text-purple-600 font-semibold hover:underline" onclick="state.view='login';render();return false">Inicia sesión</a></p></div></form></div></div></div>`}
+function drag(e){
+if(!isDragging)return;
+const chat=document.querySelector('.ai-chat-modal');
+if(!chat)return;
+const x=e.clientX-offsetX;
+const y=e.clientY-offsetY;
+// Limitar dentro de la pantalla
+const maxX=window.innerWidth-chat.offsetWidth;
+const maxY=window.innerHeight-chat.offsetHeight;
+chat.style.left=`${Math.max(0,Math.min(x,maxX))}px`;
+chat.style.top=`${Math.max(0,Math.min(y,maxY))}px`;
+}
 
-function renderTerms(){return`<div class="min-h-screen flex items-center justify-center p-4"><div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden fade-in"><div class="bg-gradient-to-br from-purple-600 to-purple-800 p-8 text-white"><div class="flex items-center gap-4"><div class="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center"><svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg></div><div><h1 class="text-3xl font-black">Términos y Condiciones</h1><p class="text-purple-200 text-sm mt-1">Por favor lee cuidadosamente</p></div></div></div><div class="p-8"><div class="h-96 overflow-y-auto bg-purple-50 p-6 rounded-2xl text-gray-700 text-sm mb-6 leading-relaxed border-2 border-purple-100"><h3 class="font-black text-purple-900 mb-4 text-lg">⚠️ AVISO A LA COMUNIDAD</h3><p class="mb-4"><strong>León Vacantes</strong> es un canal comunitario para difundir oportunidades laborales en León, GTO.</p><p class="mb-4 font-bold text-purple-800">NO nos hacemos responsables por:</p><ul class="list-disc pl-6 mb-4 space-y-2"><li>La veracidad de las ofertas</li><li>Condiciones de trabajo</li><li>Legalidad de empresas</li><li>Cualquier daño derivado del uso</li></ul><p class="mb-4 font-bold text-red-600">🚨 RECOMENDACIONES:</p><ul class="list-disc pl-6 mb-4 space-y-2"><li>NUNCA compartas datos bancarios</li><li>NO pagues por contratación</li><li>Entrevistas en lugares públicos</li><li>Verifica autenticidad</li><li>Informa a familiares</li></ul><p class="font-bold text-purple-900">Al usar esta app, aceptas que es bajo tu propio riesgo.</p></div><div class="flex items-start gap-4 mb-6 bg-purple-50 p-5 rounded-2xl border-2 border-purple-200"><input type="checkbox" id="accept-terms" class="mt-1 w-6 h-6 rounded border-purple-300 text-purple-600 cursor-pointer" ${state.acceptedTerms?'checked':''} onchange="state.acceptedTerms=this.checked;render()"><label for="accept-terms" class="text-sm font-semibold text-gray-700 cursor-pointer select-none">He leído y acepto los términos</label></div><button onclick="handleAcceptTerms()" class="btn btn-primary w-full" ${!state.acceptedTerms?'disabled':''}>Comenzar</button></div></div></div>`}
+function stopDrag(){
+if(isDragging){
+isDragging=false;
+const chat=document.querySelector('.ai-chat-modal');
+if(chat){
+chat.style.transition='all 0.3s ease';
+}
+console.log('🖱️ [IA] Drag finalizado');
+}
+}
 
-function renderDashboard(){return`<div class="min-h-screen"><header class="bg-white shadow-lg sticky top-0 z-50"><div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between"><div class="flex items-center gap-4"><div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg"><svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg></div><div><h1 class="text-xl font-black text-gray-800">Portal de Empleos</h1><p class="text-xs text-gray-500 font-semibold">León, Guanajuato</p></div></div>${!state.isGuest?`<div class="flex items-center gap-3"><button onclick="state.view='form';render()" class="btn btn-primary flex items-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg><span class="hidden sm:inline">Nueva</span></button><div class="relative"><button onclick="state.menuOpen=!state.menuOpen;render()" class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 hover:bg-purple-200"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></button>${state.menuOpen?`<div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border overflow-hidden slide-in"><div class="p-4 bg-gradient-to-r from-purple-600 to-purple-800 text-white"><p class="font-semibold text-sm truncate">${state.user?.email}</p></div><button onclick="handleLogout()" class="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>Cerrar Sesión</button><button onclick="handleDeleteAccount();state.menuOpen=false;render()" class="w-full px-4 py-3 text-left hover:bg-red-50 flex items-center gap-3 text-sm text-red-600 border-t"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>Eliminar Cuenta</button></div>`:''}</div></div>`:`<button onclick="state.view='login';state.isGuest=false;render()" class="btn btn-primary">Iniciar Sesión</button>`}</div></header>${!state.isGuest&&state.user?`<div class="max-w-7xl mx-auto px-4 mt-6"><div class="alert alert-warning"><svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg><div><strong>Recordatorio:</strong> Solo puedes editar/eliminar tus vacantes.</div></div></div>`:''}${state.isGuest?`<div class="max-w-7xl mx-auto px-4 mt-6"><div class="alert alert-info"><svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><div><strong>Modo invitado:</strong> Inicia sesión para publicar.</div></div></div>`:''}<main class="max-w-7xl mx-auto px-4 py-8"><div class="mb-8"><h2 class="text-4xl font-black text-white mb-2">Vacantes Disponibles</h2><p class="text-purple-200 font-semibold">${state.vacancies.length} oportunidad${state.vacancies.length!==1?'es':''}</p></div>${state.vacancies.length>0?`<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">${state.vacancies.map(v=>renderVacancyCard(v)).join('')}</div>`:`<div class="text-center py-20"><div class="w-32 h-32 bg-white rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-2xl"><svg class="w-20 h-20 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg></div><h3 class="text-2xl font-black text-white mb-2">No hay vacantes</h3><p class="text-purple-200">Sé el primero en publicar</p></div>`}</main></div>`}
+// Event listeners para drag
+document.addEventListener('mousemove',drag);
+document.addEventListener('mouseup',stopDrag);
 
-function renderVacancyCard(vacancy){const isOwner=state.user&&state.user.id===vacancy.user_id;return`<div class="vacancy-card fade-in"><div class="h-56 bg-gradient-to-br from-purple-400 to-purple-600 relative overflow-hidden">${vacancy.image_url?`<img src="${vacancy.image_url}" class="w-full h-full object-cover" alt="${vacancy.company}">`:`<div class="w-full h-full flex items-center justify-center"><svg class="w-24 h-24 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg></div>`}<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent"></div><div class="absolute bottom-4 left-4 right-4 text-white"><h3 class="text-2xl font-black mb-1 truncate">${vacancy.company}</h3><p class="text-purple-200 text-xs font-semibold uppercase truncate">${vacancy.job_title}</p></div>${isOwner?`<div class="absolute top-4 right-4 flex gap-2"><button onclick='handleEditVacancy(${JSON.stringify(vacancy).replace(/'/g,"&#39;")})' class="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-xl"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg></button><button onclick='handleDeleteVacancy(${JSON.stringify(vacancy).replace(/'/g,"&#39;")})' class="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div>`:''}</div><div class="p-6 space-y-4"><p class="text-gray-600 text-sm leading-relaxed line-clamp-3">${vacancy.description||'Sin descripción'}</p><div class="space-y-2"><div class="flex items-center gap-2 text-sm text-gray-600"><svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span class="font-medium">${vacancy.location||'León, GTO'}</span></div>${vacancy.work_days?`<div class="flex items-center gap-2 text-sm text-gray-600"><svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg><span class="font-medium">${vacancy.work_days}</span></div>`:''}${vacancy.schedule?`<div class="flex items-center gap-2 text-sm text-gray-600"><svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span class="font-medium">${vacancy.schedule}</span></div>`:''}</div><div class="flex gap-3 pt-2">${vacancy.contact_phone?`<a href="https://wa.me/52${vacancy.contact_phone}" target="_blank" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>WhatsApp</a>`:''} ${vacancy.contact_email?`<a href="mailto:${vacancy.contact_email}" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-purple-50 transition-all"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>Email</a>`:''}</div></div></div>`}
+// Funciones de formulario
+function cleanForm(){
+console.log('🧹 [FORM] Limpiando formulario');
+resetJobForm();
+render();
+showModal('info','Formulario Limpiado','Todos los campos han sido vaciados');
+}
 
-function renderForm(){return`<div class="min-h-screen py-8"><div class="max-w-3xl mx-auto px-4"><button onclick="openAIChat()" class="btn btn-autofill w-full mb-6 flex items-center justify-center gap-2"><i class="fas fa-robot"></i><span class="text-lg">Autofill IA</span></button><div class="bg-white rounded-3xl shadow-2xl overflow-hidden fade-in"><div class="bg-gradient-to-br from-purple-600 to-purple-800 p-8 text-white"><h2 class="text-3xl font-black mb-2">${state.editingVacancy?'Editar Vacante':'Nueva Vacante'}</h2><p class="text-purple-200">Completa la información</p></div><form onsubmit="handleSaveVacancy(event)" class="p-8 space-y-6"><div class="input-group"><label>Imagen *</label><div class="border-2 border-dashed border-purple-300 rounded-xl p-6 text-center hover:border-purple-500 transition-colors cursor-pointer bg-purple-50"><input type="file" accept="image/*" onchange="handleImageUpload(event)" class="hidden" id="image-upload"><label for="image-upload" class="cursor-pointer block">${formData.imageUrl?`<img src="${formData.imageUrl}" class="max-h-48 mx-auto rounded-xl shadow-lg mb-3"><p class="text-sm text-purple-600 font-semibold">Clic para cambiar</p>`:`<svg class="w-16 h-16 mx-auto text-purple-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg><p class="text-sm text-purple-600 font-semibold">Subir imagen</p><p class="text-xs text-gray-500 mt-1">Máx 2MB</p>`}</label></div></div><div class="input-group"><label>Empresa *</label><input type="text" required placeholder="Ej: Calzado León" value="${formData.company}" oninput="formData.company=this.value"></div><div class="input-group"><label>Puesto *</label><input type="text" required placeholder="Ej: Desarrollador" value="${formData.job_title}" oninput="formData.job_title=this.value"></div><div class="input-group"><label>Descripción *</label><textarea rows="5" required placeholder="Describe el puesto..." oninput="formData.description=this.value">${formData.description}</textarea></div><div class="input-group"><label>Ubicación</label><input type="text" placeholder="León, GTO" value="${formData.location}" oninput="formData.location=this.value"></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="input-group"><label>WhatsApp</label><input type="tel" maxlength="16" placeholder="4771234567" value="${formData.contact_phone}" oninput="formData.contact_phone=this.value.replace(/\\D/g,'')"></div><div class="input-group"><label>Email</label><input type="email" placeholder="rh@empresa.com" value="${formData.contact_email}" oninput="formData.contact_email=this.value"></div></div><div class="input-group"><label>Días de trabajo</label><textarea rows="2" placeholder="Ej: Lunes a Viernes, 8:00 AM - 6:00 PM" oninput="formData.work_days=this.value">${formData.work_days}</textarea></div><div class="input-group"><label>Horario</label><textarea rows="2" placeholder="Ej: 09:00 - 18:00, con hora de comida de 14:00 - 15:00" oninput="formData.schedule=this.value">${formData.schedule}</textarea></div><div class="flex gap-4 pt-4"><button type="button" onclick="cleanForm()" class="btn btn-cancel flex-1"><i class="fas fa-eraser mr-2"></i>Clean</button><button type="submit" class="btn btn-primary flex-1">${state.loading?'Guardando...':(state.editingVacancy?'Actualizar':'Publicar')}</button></div></form></div></div></div>`}
+function cancelForm(){
+console.log('❌ [FORM] Cancelando formulario');
+state.editingVacancy=null;
+state.view='dashboard';
+resetJobForm();
+render();
+}
 
-function render(){const app=document.getElementById('app');if(state.menuOpen&&state.view!=='dashboard')state.menuOpen=false;let content='';switch(state.view){case'login':content=renderLogin();break;case'signup':content=renderSignup();break;case'terms':content=renderTerms();break;case'dashboard':content=renderDashboard();break;case'form':content=renderForm();break;default:content=renderLogin()}app.innerHTML=content;if(state.aiChatOpen){const chatModal=`<div id="ai-chat-modal" class="block"><div id="ai-chat-header"><h3 class="font-bold text-lg"><i class="fas fa-robot mr-2"></i>Autofill IA</h3><button onclick="closeAIChat()" class="text-white hover:text-gray-300"><i class="fas fa-times text-xl"></i></button></div><div id="ai-chat-messages"></div><div id="ai-chat-input-container"><div id="ai-image-preview-container" class="mb-3"></div><textarea id="ai-chat-input" placeholder="Describe la vacante o sube una imagen..." rows="3" class="w-full p-3 bg-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 resize-none" onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}"></textarea><input type="file" id="ai-image-upload" accept="image/*" class="hidden"><label for="ai-image-upload" class="block mt-2 text-xs text-gray-400 hover:text-white cursor-pointer"><i class="fas fa-image mr-1"></i>Subir imagen (opcional)</label><div id="ai-chat-buttons"><button onclick="sendAIMessage()" class="btn-send"><i class="fas fa-paper-plane mr-1"></i>Enviar</button><button onclick="startAutofill()" class="btn-start"><i class="fas fa-play mr-1"></i>Start</button><button onclick="closeAIChat()" class="btn-close"><i class="fas fa-times mr-1"></i>Cerrar</button></div></div></div>`;app.insertAdjacentHTML('beforeend',chatModal);renderAIMessages()}}
+function resetAuthForm(){
+console.log('🧹 [AUTH] Reset auth form');
+state.formData.email='';
+state.formData.password='';
+state.formData.confirmPassword='';
+}
 
-async function init(){console.log('🚀 Iniciando Empleos León GTO');const{data}=await supabaseClient.auth.getSession();if(data.session){console.log('✅ Sesión activa');state.user=data.session.user;const accepted=localStorage.getItem('terms_accepted_'+data.session.user.id);state.acceptedTerms=!!accepted;state.view=accepted?'dashboard':'terms';await loadVacancies()}supabaseClient.auth.onAuthStateChange((event,session)=>{console.log('🔄 Auth:',event);if(event==='SIGNED_IN'){state.user=session.user;const accepted=localStorage.getItem('terms_accepted_'+session.user.id);state.acceptedTerms=!!accepted;state.view=accepted?'dashboard':'terms';loadVacancies();render()}else if(event==='SIGNED_OUT'){state.user=null;state.view='login';render()}});supabaseClient.channel('vacancies-changes').on('postgres_changes',{event:'*',schema:'public',table:'vacancies'},()=>{console.log('📝 Cambio en vacantes');loadVacancies()}).subscribe();console.log('✅ App inicializada');render()}
+function resetJobForm(){
+console.log('🧹 [JOB] Reset job form');
+state.formData.company='';
+state.formData.job_title='';
+state.formData.description='';
+state.formData.location='';
+state.formData.contact_phone='';
+state.formData.contact_email='';
+state.formData.schedule='';
+state.formData.work_days='';
+state.formData.imageUrl='';
+}
 
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+// Funciones de renderizado
+function renderLogin(){
+return`
+<div class="min-h-screen flex items-center justify-center p-4">
+<div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden fade-in">
+<div class="bg-gradient-to-br from-purple-600 to-purple-800 p-8 text-white text-center">
+<div class="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center shadow-xl">
+<svg class="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+</svg>
+</div>
+<h1 class="text-3xl font-black mb-2">Portal de Empleos</h1>
+<p class="text-purple-200 text-sm font-semibold">León, Guanajuato</p>
+</div>
+<div class="p-8">
+<form onsubmit="handleLogin(event)">
+<div class="input-group">
+<label>Correo Electrónico</label>
+<input type="email" required placeholder="tu@email.com" value="${state.formData.email}" oninput="state.formData.email=this.value">
+</div>
+<div class="input-group">
+<label>Contraseña</label>
+<input type="${state.showPassword?'text':'password'}" required placeholder="••••••••" value="${state.formData.password}" oninput="state.formData.password=this.value">
+<span class="input-icon" onclick="togglePassword('password')">${state.showPassword?'👁️':'👁️‍🗨️'}</span>
+</div>
+<div class="text-right mb-6">
+<a href="#" class="text-purple-600 text-sm font-semibold hover:underline" onclick="handleResetPassword();return false">
+¿Olvidaste tu contraseña?
+</a>
+</div>
+<button type="submit" class="btn btn-primary w-full mb-3" ${state.loading?'disabled':''}>
+${state.loading?'<i class="fas fa-spinner fa-spin"></i> Ingresando...':'<i class="fas fa-sign-in-alt"></i> Ingresar'}
+</button>
+<button type="button" class="btn btn-outline w-full mb-3" onclick="handleGuestAccess()">
+<i class="fas fa-eye"></i> Ver Empleos Públicos
+</button>
+<div class="text-center mt-6">
+<p class="text-gray-600 text-sm mb-2">¿No tienes cuenta?</p>
+<button type="button" class="text-purple-600 font-semibold hover:underline" onclick="state.view='signup';render()">
+Crear cuenta nueva
+</button>
+</div>
+</form>
+</div>
+</div>
+</div>
+`;
+}
+
+function renderSignup(){
+return`
+<div class="min-h-screen flex items-center justify-center p-4">
+<div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden fade-in">
+<div class="bg-gradient-to-br from-purple-600 to-purple-800 p-8 text-white text-center">
+<h1 class="text-3xl font-black mb-2">Crear Cuenta</h1>
+<p class="text-purple-200 text-sm">Únete a nuestra comunidad</p>
+</div>
+<div class="p-8">
+<form onsubmit="handleSignup(event)">
+<div class="input-group">
+<label>Correo Electrónico</label>
+<input type="email" required placeholder="tu@email.com" value="${state.formData.email}" oninput="state.formData.email=this.value">
+</div>
+<div class="input-group">
+<label>Contraseña</label>
+<input type="${state.showPassword?'text':'password'}" required placeholder="Mínimo 6 caracteres" value="${state.formData.password}" oninput="state.formData.password=this.value">
+<span class="input-icon" onclick="togglePassword('password')">${state.showPassword?'👁️':'👁️‍🗨️'}</span>
+</div>
+<div class="input-group">
+<label>Confirmar Contraseña</label>
+<input type="${state.showConfirmPassword?'text':'password'}" required placeholder="Repite tu contraseña" value="${state.formData.confirmPassword}" oninput="state.formData.confirmPassword=this.value">
+<span class="input-icon" onclick="togglePassword('confirmPassword')">${state.showConfirmPassword?'👁️':'👁️‍🗨️'}</span>
+</div>
+<button type="submit" class="btn btn-primary w-full mb-3" ${state.loading?'disabled':''}>
+${state.loading?'<i class="fas fa-spinner fa-spin"></i> Creando...':'<i class="fas fa-user-plus"></i> Crear Cuenta'}
+</button>
+<button type="button" class="btn btn-cancel w-full" onclick="state.view='login';resetAuthForm();render()">
+<i class="fas fa-times"></i> Cancelar
+</button>
+<div class="text-center mt-6">
+<p class="text-gray-600 text-sm">
+¿Ya tienes cuenta? <a href="#" class="text-purple-600 font-semibold hover:underline" onclick="state.view='login';render();return false">
+Inicia sesión
+</a>
+</p>
+</div>
+</form>
+</div>
+</div>
+</div>
+`;
+}
+
+function renderTerms(){
+return`
+<div class="min-h-screen flex items-center justify-center p-4">
+<div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden fade-in">
+<div class="bg-gradient-to-br from-purple-600 to-purple-800 p-8 text-white">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center">
+<svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+</svg>
+</div>
+<div>
+<h1 class="text-3xl font-black">Términos y Condiciones</h1>
+<p class="text-purple-200 text-sm mt-1">Por favor lee cuidadosamente</p>
+</div>
+</div>
+</div>
+<div class="p-8">
+<div class="h-96 overflow-y-auto bg-purple-50 p-6 rounded-2xl text-gray-700 text-sm mb-6 leading-relaxed border-2 border-purple-100">
+<h3 class="font-black text-purple-900 mb-4 text-lg">⚠️ AVISO A LA COMUNIDAD</h3>
+<p class="mb-4"><strong>León Vacantes</strong> es un canal comunitario para difundir oportunidades laborales en León, GTO.</p>
+<p class="mb-4 font-bold text-purple-800">NO nos hacemos responsables por:</p>
+<ul class="list-disc pl-6 mb-4 space-y-2">
+<li>La veracidad de las ofertas</li>
+<li>Condiciones de trabajo</li>
+<li>Legalidad de empresas</li>
+<li>Cualquier daño derivado del uso</li>
+</ul>
+<p class="mb-4 font-bold text-red-600">🚨 RECOMENDACIONES:</p>
+<ul class="list-disc pl-6 mb-4 space-y-2">
+<li>NUNCA compartas datos bancarios</li>
+<li>NO pagues por contratación</li>
+<li>Entrevistas en lugares públicos</li>
+<li>Verifica autenticidad</li>
+<li>Informa a familiares</li>
+</ul>
+<p class="font-bold text-purple-900">Al usar esta app, aceptas que es bajo tu propio riesgo.</p>
+</div>
+<div class="flex items-start gap-4 mb-6 bg-purple-50 p-5 rounded-2xl border-2 border-purple-200">
+<input type="checkbox" id="accept-terms" class="mt-1 w-6 h-6 rounded border-purple-300 text-purple-600 cursor-pointer" ${state.acceptedTerms?'checked':''} onchange="state.acceptedTerms=this.checked;render()">
+<label for="accept-terms" class="text-sm font-semibold text-gray-700 cursor-pointer select-none">
+He leído y acepto los términos
+</label>
+</div>
+<button onclick="handleAcceptTerms()" class="btn btn-primary w-full" ${!state.acceptedTerms?'disabled':''}>
+<i class="fas fa-check"></i> Comenzar
+</button>
+</div>
+</div>
+</div>
+`;
+}
+
+function renderDashboard(){
+return`
+<div class="min-h-screen">
+<header class="bg-white shadow-lg sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl flex items-center justify-center shadow-lg">
+<svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+</svg>
+</div>
+<div>
+<h1 class="text-xl font-black text-gray-800">Portal de Empleos</h1>
+<p class="text-xs text-gray-500 font-semibold">León, Guanajuato</p>
+</div>
+</div>
+${!state.isGuest?`
+<div class="flex items-center gap-3">
+<button onclick="state.view='form';render()" class="btn btn-primary flex items-center gap-2">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+</svg>
+<span class="hidden sm:inline">Nueva</span>
+</button>
+<div class="relative">
+<button onclick="state.menuOpen=!state.menuOpen;render()" class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 hover:bg-purple-200">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+</svg>
+</button>
+${state.menuOpen?`
+<div class="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border overflow-hidden slide-in">
+<div class="p-4 bg-gradient-to-r from-purple-600 to-purple-800 text-white">
+<p class="font-semibold text-sm truncate">${state.user?.email}</p>
+</div>
+<button onclick="handleLogout()" class="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 text-sm text-gray-700">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+</svg>
+Cerrar Sesión
+</button>
+<button onclick="handleDeleteAccount();state.menuOpen=false;render()" class="w-full px-4 py-3 text-left hover:bg-red-50 flex items-center gap-3 text-sm text-red-600 border-t">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+</svg>
+Eliminar Cuenta
+</button>
+</div>
+`:''}
+</div>
+</div>
+`:`
+<button onclick="state.view='login';state.isGuest=false;render()" class="btn btn-primary">
+<i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+</button>
+`}
+</div>
+</header>
+${!state.isGuest&&state.user?`
+<div class="max-w-7xl mx-auto px-4 mt-6">
+<div class="alert alert-warning">
+<svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+</svg>
+<div><strong>Recordatorio:</strong> Solo puedes editar/eliminar tus vacantes.</div>
+</div>
+</div>
+`:''}
+${state.isGuest?`
+<div class="max-w-7xl mx-auto px-4 mt-6">
+<div class="alert alert-info">
+<svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+</svg>
+<div><strong>Modo invitado:</strong> Inicia sesión para publicar.</div>
+</div>
+</div>
+`:''}
+<main class="max-w-7xl mx-auto px-4 py-8">
+<div class="mb-8">
+<h2 class="text-4xl font-black text-white mb-2">Vacantes Disponibles</h2>
+<p class="text-purple-200 font-semibold">${state.vacancies.length} oportunidad${state.vacancies.length!==1?'es':''}</p>
+</div>
+${state.vacancies.length>0?`
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+${state.vacancies.map(v=>renderVacancyCard(v)).join('')}
+</div>
+`:`
+<div class="text-center py-20">
+<div class="w-32 h-32 bg-white rounded-3xl mx-auto mb-6 flex items-center justify-center shadow-2xl">
+<svg class="w-20 h-20 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+</svg>
+</div>
+<h3 class="text-2xl font-black text-white mb-2">No hay vacantes</h3>
+<p class="text-purple-200">Sé el primero en publicar</p>
+</div>
+`}
+</main>
+</div>
+`;
+}
+
+function renderVacancyCard(vacancy){
+const isOwner=state.user&&state.user.id===vacancy.user_id;
+return`
+<div class="vacancy-card fade-in">
+<div class="h-56 bg-gradient-to-br from-purple-400 to-purple-600 relative overflow-hidden">
+${vacancy.image_url?`
+<img src="${vacancy.image_url}" class="w-full h-full object-cover" alt="${vacancy.company}">
+`:`
+<div class="w-full h-full flex items-center justify-center">
+<svg class="w-24 h-24 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+</svg>
+</div>
+`}
+<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 text-white">
+<h3 class="text-2xl font-black mb-1 truncate">${vacancy.company}</h3>
+<p class="text-purple-200 text-xs font-semibold uppercase truncate">${vacancy.job_title}</p>
+</div>
+${isOwner?`
+<div class="absolute top-4 right-4 flex gap-2">
+<button onclick='handleEditVacancy(${JSON.stringify(vacancy).replace(/'/g,"&#39;")})' class="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center text-purple-600 hover:bg-purple-600 hover:text-white transition-all shadow-xl">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+</svg>
+</button>
+<button onclick='handleDeleteVacancy(${JSON.stringify(vacancy).replace(/'/g,"&#39;")})' class="w-10 h-10 bg-white/90 rounded-full flex items-center justify-center text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-xl">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+</svg>
+</button>
+</div>
+`:''}
+</div>
+<div class="p-6 space-y-4">
+<p class="text-gray-600 text-sm leading-relaxed line-clamp-3">${vacancy.description||'Sin descripción'}</p>
+<div class="space-y-2">
+<div class="flex items-center gap-2 text-sm text-gray-600">
+<svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+</svg>
+<span class="font-medium">${vacancy.location||'León, GTO'}</span>
+</div>
+${vacancy.work_days?`
+<div class="flex items-center gap-2 text-sm text-gray-600">
+<svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+</svg>
+<span class="font-medium">${vacancy.work_days}</span>
+</div>
+`:''}
+${vacancy.schedule?`
+<div class="flex items-center gap-2 text-sm text-gray-600">
+<svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+</svg>
+<span class="font-medium">${vacancy.schedule}</span>
+</div>
+`:''}
+</div>
+<div class="flex gap-3 pt-2">
+${vacancy.contact_phone?`
+<a href="https://wa.me/52${vacancy.contact_phone.replace(/\D/g,'')}" target="_blank" class="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all">
+<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+<path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+</svg>
+WhatsApp
+</a>
+`:''}
+${vacancy.contact_email?`
+<a href="mailto:${vacancy.contact_email}" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-purple-50 transition-all">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+</svg>
+Email
+</a>
+`:''}
+</div>
+</div>
+</div>
+`;
+}
+
+function renderForm(){
+return`
+<div class="min-h-screen py-8">
+<div class="max-w-3xl mx-auto px-4">
+<div class="bg-white rounded-3xl shadow-2xl overflow-hidden fade-in">
+<div class="bg-gradient-to-br from-purple-600 to-purple-800 p-8 text-white">
+<h2 class="text-3xl font-black mb-2">${state.editingVacancy?'Editar Vacante':'Nueva Vacante'}</h2>
+<p class="text-purple-200">Completa la información</p>
+</div>
+<form onsubmit="handleSaveVacancy(event)" class="p-8 space-y-6">
+<div class="input-group">
+<label>Imagen *</label>
+<div class="border-2 border-dashed border-purple-300 rounded-xl p-6 text-center hover:border-purple-500 transition-colors cursor-pointer bg-purple-50">
+<input type="file" accept="image/*" onchange="handleImageUpload(event)" class="hidden" id="image-upload">
+<label for="image-upload" class="cursor-pointer block">
+${state.formData.imageUrl?`
+<img src="${state.formData.imageUrl}" class="max-h-48 mx-auto rounded-xl shadow-lg mb-3">
+<p class="text-sm text-purple-600 font-semibold">Clic para cambiar</p>
+`:`
+<svg class="w-16 h-16 mx-auto text-purple-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+</svg>
+<p class="text-sm text-purple-600 font-semibold">Subir imagen</p>
+<p class="text-xs text-gray-500 mt-1">Máx 2MB</p>
+`}
+</label>
+</div>
+</div>
+<div class="input-group">
+<label>Empresa *</label>
+<input type="text" required placeholder="Ej: Calzado León" value="${state.formData.company}" oninput="state.formData.company=this.value">
+</div>
+<div class="input-group">
+<label>Puesto *</label>
+<input type="text" required placeholder="Ej: Desarrollador" value="${state.formData.job_title}" oninput="state.formData.job_title=this.value">
+</div>
+<div class="input-group">
+<label>Descripción *</label>
+<textarea rows="5" required placeholder="Describe el puesto..." oninput="state.formData.description=this.value">${state.formData.description}</textarea>
+</div>
+<div class="input-group">
+<label>Ubicación</label>
+<input type="text" placeholder="León, GTO" value="${state.formData.location}" oninput="state.formData.location=this.value">
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="input-group">
+<label>WhatsApp</label>
+<input type="tel" maxlength="16" placeholder="4771234567" value="${state.formData.contact_phone}" oninput="state.formData.contact_phone=this.value.replace(/\D/g,'')">
+</div>
+<div class="input-group">
+<label>Email</label>
+<input type="email" placeholder="rh@empresa.com" value="${state.formData.contact_email}" oninput="state.formData.contact_email=this.value">
+</div>
+</div>
+<div class="input-group">
+<label>Días de trabajo</label>
+<textarea rows="2" placeholder="Ej: Lunes a Viernes, 8:00 AM - 6:00 PM" oninput="state.formData.work_days=this.value">${state.formData.work_days}</textarea>
+</div>
+<div class="input-group">
+<label>Horario</label>
+<textarea rows="2" placeholder="Ej: 09:00 - 18:00, con hora de comida de 14:00 - 15:00" oninput="state.formData.schedule=this.value">${state.formData.schedule}</textarea>
+</div>
+<div class="flex gap-4 pt-4">
+<button type="button" onclick="cancelForm()" class="btn btn-cancel flex-1">
+<i class="fas fa-times"></i> Cancel
+</button>
+<button type="button" onclick="cleanForm()" class="btn btn-clean flex-1">
+<i class="fas fa-eraser"></i> Clean
+</button>
+<button type="button" onclick="toggleAIChat()" class="btn btn-autofill flex-1">
+<i class="fas fa-robot"></i> Autofill IA
+</button>
+<button type="submit" class="btn btn-save flex-1" ${state.loading?'disabled':''}>
+${state.loading?'<i class="fas fa-spinner fa-spin"></i> Guardando...':(state.editingVacancy?'<i class="fas fa-edit"></i> Actualizar':'<i class="fas fa-save"></i> Publicar')}
+</button>
+</div>
+</form>
+</div>
+</div>
+${state.aiChatOpen?renderAIChat():''}
+</div>
+`;
+}
+
+function renderAIChat(){
+return`
+<div class="ai-chat-modal" onmousedown="startDrag(event)">
+<div class="ai-chat-header">
+<h3><i class="fas fa-robot mr-2"></i>Autofill IA</h3>
+<div class="flex items-center gap-2">
+<button class="close-btn" onclick="toggleChatMinimize()" title="Minimizar">
+<i class="fas fa-minus"></i>
+</button>
+<button class="close-btn" onclick="state.aiChatOpen=false;render()" title="Cerrar">
+<i class="fas fa-times"></i>
+</button>
+</div>
+</div>
+<div class="ai-chat-messages">
+${state.aiMessages.map(msg=>`
+<div class="ai-message ${msg.role}">
+${msg.content}
+</div>
+`).join('')}
+${state.aiLoading?`
+<div class="ai-message bot">
+<span class="ai-loading"></span> Procesando...
+</div>
+`:''}
+</div>
+<div class="ai-chat-input">
+<div class="file-upload">
+<label>
+<i class="fas fa-paperclip mr-1"></i> Imagen
+<input type="file" accept="image/*" onchange="handleAIImageUpload(event)" />
+</label>
+${state.aiImagePreview?`
+<div class="file-preview">
+<img src="${state.aiImagePreview}" alt="Preview" />
+<button class="remove-file" onclick="removeAIImage()">×</button>
+</div>
+`:''}
+</div>
+<textarea id="ai-chat-input" placeholder="Describe la vacante o sube una imagen con los datos..." rows="3" onkeypress="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage();}"></textarea>
+<div class="ai-chat-actions">
+<button class="btn-send" onclick="sendAIMessage()">
+<i class="fas fa-paper-plane"></i> Enviar
+</button>
+<button class="btn-start" onclick="startAutofill()">
+<i class="fas fa-play"></i> START
+</button>
+<button class="btn-close-chat" onclick="state.aiChatOpen=false;render()">
+<i class="fas fa-times"></i> Cerrar
+</button>
+</div>
+</div>
+</div>
+`;
+}
+
+function render(){
+const app=document.getElementById('app');
+if(state.menuOpen&&state.view!=='dashboard')state.menuOpen=false;
+let content='';
+switch(state.view){
+case'login':content=renderLogin();break;
+case'signup':content=renderSignup();break;
+case'terms':content=renderTerms();break;
+case'dashboard':content=renderDashboard();break;
+case'form':content=renderForm();break;
+default:content=renderLogin();
+}
+app.innerHTML=content;
+window.scrollTo({top:0,behavior:'smooth'});
+console.log(`✅ [RENDER] Vista actual: ${state.view}`);
+}
+
+// Inicialización
+async function init(){
+console.log('🚀 [INIT] Iniciando aplicación...');
+const{data,error}=await supabaseClient.auth.getSession();
+if(error){
+console.error('❌ [INIT] Error al obtener sesión:',error);
+}
+if(data.session){
+console.log('✅ [INIT] Sesión activa:',data.session.user.email);
+state.user=data.session.user;
+const accepted=localStorage.getItem('terms_accepted_'+data.session.user.id);
+state.acceptedTerms=!!accepted;
+state.view=accepted?'dashboard':'terms';
+await loadVacancies();
+}else{
+console.log('ℹ️ [INIT] No hay sesión activa');
+}
+// Listener de cambios de autenticación
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+console.log('🔄 [AUTH] Cambio de estado:',event);
+if(event==='SIGNED_IN'){
+state.user=session.user;
+const accepted=localStorage.getItem('terms_accepted_'+session.user.id);
+state.acceptedTerms=!!accepted;
+state.view=accepted?'dashboard':'terms';
+loadVacancies();
+render();
+}else if(event==='SIGNED_OUT'){
+state.user=null;
+state.view='login';
+render();
+}
+});
+// Listener de cambios en vacantes
+supabaseClient.channel('vacancies-changes')
+.on('postgres_changes',{event:'*',schema:'public',table:'vacancies'},()=>{
+console.log('📝 [REALTIME] Cambio detectado en vacantes');
+loadVacancies();
+})
+.subscribe();
+console.log('✅ [INIT] Aplicación inicializada completamente');
+render();
+}
+
+// Iniciar cuando el DOM esté listo
+if(document.readyState==='loading'){
+document.addEventListener('DOMContentLoaded',init);
+}else{
+init();
+}
+
+console.log('✅ [CARGA] Script cargado completamente');
 </script>
 </body>
 </html>
