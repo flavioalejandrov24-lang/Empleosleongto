@@ -127,6 +127,7 @@ let state = {
   menuOpen: false,
   acceptedTerms: false,
   loading: false,
+  isRendering: false,
   formData: {
     email: '',
     password: '',
@@ -146,7 +147,8 @@ let state = {
   aiLoading: false,
   aiImage: null,
   aiImagePreview: null,
-  aiExtractedData: null
+  aiExtractedData: null,
+  chatMinimized: false
 };
 
 // ==================== UTILIDADES ====================
@@ -200,6 +202,24 @@ const escapeHtml = (text) => {
   return String(text).replace(/[&<>"']/g, m => map[m]);
 };
 
+// ==================== RESETEO COMPLETO ====================
+function resetCompleteState() {
+  console.log('🔄 Reseteando estado completo...');
+  state.user = null;
+  state.isGuest = false;
+  state.view = 'login';
+  state.vacancies = [];
+  state.editingVacancy = null;
+  state.showPassword = false;
+  state.showConfirmPassword = false;
+  state.menuOpen = false;
+  state.acceptedTerms = false;
+  state.loading = false;
+  resetAuthForm();
+  resetJobForm();
+  clearAIData();
+}
+
 // ==================== AUTENTICACIÓN ====================
 async function handleLogin(e) {
   e.preventDefault();
@@ -219,18 +239,11 @@ async function handleLogin(e) {
     if (error) throw error;
     if (!data || !data.user) throw new Error('No se recibió información del usuario');
     
-    state.user = data.user;
-    const accepted = localStorage.getItem('terms_accepted_' + data.user.id);
-    state.acceptedTerms = !!accepted;
-    state.view = accepted ? 'dashboard' : 'terms';
-    
-    await loadVacancies();
-    render();
-    showModal('success', '¡Bienvenido!', 'Has iniciado sesión correctamente');
+    // NO hacer render aquí - el onAuthStateChange se encargará
+    console.log('✅ Login exitoso');
   } catch (error) {
     console.error('❌ Error login:', error);
     showModal('error', 'Error de inicio de sesión', error.message || 'Verifica tus credenciales');
-  } finally {
     hideLoading();
   }
 }
@@ -271,19 +284,25 @@ async function handleSignup(e) {
 
 async function handleLogout() {
   if (!confirm('¿Cerrar sesión?')) return;
+  
+  console.log('🚪 Cerrando sesión...');
   showLoading();
+  
   try {
+    // Primero resetear el estado local ANTES de hacer signOut
+    resetCompleteState();
+    
+    // Ahora hacer signOut - esto disparará el onAuthStateChange pero el estado ya está limpio
     await supabaseClient.auth.signOut();
-    state.user = null;
-    state.isGuest = false;
-    state.view = 'login';
-    state.vacancies = [];
-    resetAuthForm();
-    resetJobForm();
-    clearAIData();
+    
+    console.log('✅ Sesión cerrada');
+    
+    // Forzar un render final
     render();
+    
   } catch (error) {
     console.error('❌ Error logout:', error);
+    showModal('error', 'Error', 'Hubo un problema al cerrar sesión');
   } finally {
     hideLoading();
   }
@@ -307,7 +326,10 @@ async function handleDeleteAccount() {
       }
     }
     
-    localStorage.removeItem('terms_accepted_' + state.user.id);
+    if (state.user?.id) {
+      localStorage.removeItem('terms_accepted_' + state.user.id);
+    }
+    
     showModal('success', '¡Eliminado!', 'Tus vacantes han sido eliminadas');
     setTimeout(() => handleLogout(), 2000);
   } catch (error) {
@@ -623,6 +645,7 @@ function clearAIData() {
   state.aiImage = null;
   state.aiImagePreview = null;
   state.aiExtractedData = null;
+  state.chatMinimized = false;
 }
 
 // ==================== FORMULARIO ====================
@@ -662,8 +685,19 @@ function resetJobForm() {
 
 // ==================== RENDER ====================
 function render() {
+  // Evitar renders concurrentes
+  if (state.isRendering) {
+    console.log('⏸️ Render ya en progreso, saltando...');
+    return;
+  }
+  
+  state.isRendering = true;
+  
   const app = document.getElementById('app');
-  if (!app) return;
+  if (!app) {
+    state.isRendering = false;
+    return;
+  }
   
   let content = '';
   switch (state.view) {
@@ -689,6 +723,8 @@ function render() {
   app.innerHTML = content;
   attachEvents();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  
+  state.isRendering = false;
 }
 
 function renderLogin() {
@@ -1199,18 +1235,29 @@ async function init() {
     
     supabaseClient.auth.onAuthStateChange(async (event, session) => {
       console.log('🔐 Auth:', event);
+      
+      // Evitar procesar si ya estamos procesando un logout
+      if (event === 'SIGNED_OUT' && !state.user) {
+        console.log('⏭️ SIGNED_OUT ignorado - ya procesado');
+        return;
+      }
+      
       if (event === 'SIGNED_IN' && session?.user) {
         state.user = session.user;
         const accepted = localStorage.getItem('terms_accepted_' + session.user.id);
         state.acceptedTerms = !!accepted;
         state.view = accepted ? 'dashboard' : 'terms';
         await loadVacancies();
+        hideLoading();
         render();
+        showModal('success', '¡Bienvenido!', 'Has iniciado sesión correctamente');
       } else if (event === 'SIGNED_OUT') {
-        state.user = null;
-        state.view = 'login';
-        state.vacancies = [];
-        render();
+        // Solo resetear si no lo hemos hecho ya
+        if (state.user) {
+          console.log('🔄 SIGNED_OUT detectado - reseteando estado');
+          resetCompleteState();
+          render();
+        }
       }
     });
     
